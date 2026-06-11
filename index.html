@@ -5,10 +5,28 @@
     </head>
     <body>
         <div class="window" id="myFirstWindow">
-            <div class="title-bar">My App</div>
+            <div class="title-bar">
+                <div class="window-title">My App</div>
+
+                <div class="window-controls">
+                    <button id="min-btn">_</button>
+                    <button id="max-btn">☐</button>
+                    <button id="close-btn">X</button>
+                </div>
+            </div>
             <div class="window-content">
                 <p>Hello World!</p>
             </div>
         </div> 
+        
+        <div class="taskbar">
+            <div class="taskbar-left">
+                <div class="start-button">Menu</div>
+                <div class="taskbar-app active" id="taskbar-app-1">My App</div>
+            </div>
+            <div class="clock"></div>
+        </div>
+        
+        <script src="index.js"></script>
     </body>
 </html>

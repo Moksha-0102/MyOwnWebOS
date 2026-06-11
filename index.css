@@ -24,8 +24,107 @@ body{
     padding: 5px 10px;
     font-weight: bold;
     cursor: grab;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.window-content {
-    padding: 15px;
+.window-controls button {
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 2px;
+}
+
+.window-controls button:active {
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+}
+
+.window.maximized {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: calc(100vh - 40px) !important;
+}
+
+.window.minimized {
+    height: auto !important;
+}
+
+.window.minimized .window-content {
+    display: none;
+}
+
+.taskbar {
+    position:absolute;
+    bottom:0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    box-sizing: border-box;
+    z-index: 999;
+}
+
+.start-button {
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    padding: 4px 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.start-button:active {
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+}
+
+.clock {
+    font-family: monospace;
+    padding: 4px 10px;
+    border: 2px inset #fff;
+}
+
+.taskbar-left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.taskbar-app {
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    padding: 4px 15px;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 100px;
+    text-align: center;
+}
+
+.taskbar-app.active {
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    border-bottom: 2px solid #fff;
+    border-right: 2px solid #fff;
+    background-color: #d4d4d4;
 }
