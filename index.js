@@ -23,66 +23,112 @@ updateClock()
 
 setInterval(updateClock, 1000)
 
-const myWindow = document.getElementById('myFirstWindow');
-const titleBar = document.querySelector('.title-bar');
 
+
+
+let highestZIndex = 10;
 let isDragging = false;
-
+let draggedWindow = null;
 let offsetX = 0;
 let offsetY = 0;
 
-titleBar.addEventListener('mousedown', (e) => {
-    if (e.target.tagName === 'BUTTON') return;
-    isDragging = true;
+document.addEventListener('mousedown', (e) => {
+    const clickedWindow = e.target.closest('.window');
+    if (clickedWindow) {
+        highestZIndex++;
+        clickedWindow.style.zIndex = highestZIndex;
+    }
 
-    offsetX = e.clientX - myWindow.offsetLeft;
-    offsetY = e.clientY - myWindow.offsetTop;
+    const titleBar = e.target.closest('.title-bar');
+    if (titleBar && e.target.tagName !== 'BUTTON') {
+        isDragging = true;
+        draggedWindow = clickedWindow;
+
+        offsetX = e.clientX - draggedWindow.offsetLeft;
+        offsetY = e.clientY - draggedWindow.offsetTop;
+    }
 });
 
 document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
+    if (!isDragging || !draggedWindow) return;
 
-    myWindow.style.left = (e.clientX - offsetX) + 'px';
-    myWindow.style.top = (e.clientY - offsetY) + 'px';
+    let newX = e.clientX - offsetX;
+    let newY = e.clientY - offsetY;
+
+    if (newY < 0){
+        newY = 0;
+    }
+
+    let bottomLimit = window.innerHeight - 70;
+    if (newY > bottomLimit){
+        newY = bottomLimit;
+    }
+
+    draggedWindow.style.left = newX + 'px';
+    draggedWindow.style.top = newY + 'px';
 });
 
 document.addEventListener('mouseup', () => {
     isDragging = false;
+    draggedWindow = null;
 });
 
 
 
 
-const minBtn = document.getElementById('min-btn');
-const maxBtn = document.getElementById('max-btn');
-const closeBtn = document.getElementById('close-btn');
-const taskbarApp1 = document.getElementById('taskbar-app-1');
+function registerApp(winId, taskbarId, menuId, minId, maxId, closeId){
+    const win = document.getElementById(winId);
+    const taskbarBtn = document.getElementById(taskbarId);
+    const menuBtn = document.getElementById(menuId);
+    const minBtn = document.getElementById(minId);
+    const maxBtn = document.getElementById(maxId);
+    const closeBtn = document.getElementById(closeId);
 
-closeBtn.addEventListener('click', () => {
-    myWindow.style.display = 'none';
-    taskbarApp1.style.display = 'none';
-    myWindow.classList.toggle('maximized');
-});
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            win.style.display = 'block';
+            highestZIndex++;
+            win.style.zIndex = highestZIndex;
 
-maxBtn.addEventListener('click', () => {
-    myWindow.classList.toggle('maximized');
-});
+            taskbarBtn.style.display = 'block';
+            taskbarBtn.classList.add('active');
 
-minBtn.addEventListener('click', () => {
-    myWindow.style.display = 'none';
-    taskbarApp1.classList.remove('active');
-});
-
-taskbarApp1.addEventListener('click', () => {
-    if (myWindow.style.display === 'none') {
-        myWindow.style.display = 'block';
-        taskbarApp1.classList.add('active');
-    } else {
-        myWindow.style.display = 'none';
-        taskbarApp1.classList.remove('active');
+            document.getElementById('start-menu').style.display = 'none';
+            document.querySelector('.start-button').classList.remove('active');
+        });
     }
-});
 
+    if (closeBtn) closeBtn.addEventListener('click', () => {
+        win.style.display = 'none';
+        if (taskbarBtn) taskbarBtn.style.display = 'none';
+    });
+
+    if (maxBtn) maxBtn.addEventListener('click', () => {
+        win.classList.toggle('maximized');
+    });
+
+    if (minBtn) minBtn.addEventListener('click', () => {
+        win.style.display = 'none';
+        if (taskbarBtn) taskbarBtn.classList.remove('active');
+    })
+
+    if (taskbarBtn) taskbarBtn.addEventListener('click', () => {
+        if (win.style.display === 'none'){
+            win.style.display = 'block';
+            highestZIndex++;
+            win.style.zIndex = highestZIndex;
+            taskbarBtn.classList.add('active');
+        } else {
+            win.style.display = 'none';
+            taskbarBtn.classList.remove('active');
+        }
+    });
+}
+
+
+registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', 'np-max-btn', 'np-close-btn');
+registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
+registerApp('myFirstWindow', 'taskbar-app-1', null, 'min-btn', 'max-btn', 'close-btn');
 
 
 
@@ -110,36 +156,6 @@ document.addEventListener('click', (e) => {
 
 
 
-
-const menuNotepad = document.getElementById('menu-notepad');
-const notepadWindow = document.getElementById('notepad-window')
-const taskbarNotepad = document.getElementById('taskbar-notepad');
-
-menuNotepad.addEventListener('click', () => {
-    notepadWindow.style.display = 'block';
-    taskbarNotepad.style.display = 'block';
-    taskbarNotepad.classList.add('active');
-
-
-    startMenu.style.display = 'none';
-    startButton.classList.remove('active');
-});
-
-
-
-
-const menuCalculator = document.getElementById('menu-calculator');
-const calculatorWindow = document.getElementById('calculator-window');
-const taskbarCalculator = document.getElementById('taskbar-calculator');
-
-menuCalculator.addEventListener('click', () => {
-    calculatorWindow.style.display = 'block';
-    taskbarCalculator.style.display = 'block';
-    taskbarCalculator.classList.add('active');
-
-    startMenu.style.display = 'none';
-    startButton.classList.remove('active')
-})
 
 const calcDisplay = document.getElementById('calc-display');
 const calcButtons = document.querySelectorAll('.calc-btn');
@@ -194,3 +210,4 @@ calcButtons.forEach(button => {
         calcDisplay.value = currentInput;
     });
 });
+
