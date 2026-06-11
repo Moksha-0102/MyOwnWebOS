@@ -107,3 +107,90 @@ document.addEventListener('click', (e) => {
         startButton.classList.remove('active');
     }
 });
+
+
+
+
+const menuNotepad = document.getElementById('menu-notepad');
+const notepadWindow = document.getElementById('notepad-window')
+const taskbarNotepad = document.getElementById('taskbar-notepad');
+
+menuNotepad.addEventListener('click', () => {
+    notepadWindow.style.display = 'block';
+    taskbarNotepad.style.display = 'block';
+    taskbarNotepad.classList.add('active');
+
+
+    startMenu.style.display = 'none';
+    startButton.classList.remove('active');
+});
+
+
+
+
+const menuCalculator = document.getElementById('menu-calculator');
+const calculatorWindow = document.getElementById('calculator-window');
+const taskbarCalculator = document.getElementById('taskbar-calculator');
+
+menuCalculator.addEventListener('click', () => {
+    calculatorWindow.style.display = 'block';
+    taskbarCalculator.style.display = 'block';
+    taskbarCalculator.classList.add('active');
+
+    startMenu.style.display = 'none';
+    startButton.classList.remove('active')
+})
+
+const calcDisplay = document.getElementById('calc-display');
+const calcButtons = document.querySelectorAll('.calc-btn');
+
+let currentInput = '';
+let previousInput = '';
+let operator = '';
+
+calcButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+        const value = e.target.textContent;
+
+        if (value === 'C') {
+            currentInput = '';
+            previousInput = '';
+            operator = '';
+            calcDisplay.value = '0';
+            return;
+        }
+
+        if (value === '='){
+            if (currentInput === '' || previousInput === '') return;
+            
+            let result;
+
+            const num1 = parseFloat(previousInput);
+            const num2 = parseFloat(currentInput);
+
+            if (operator === '+') result = num1 + num2;
+            if (operator === '-') result = num1 - num2;
+            if (operator === '*') result = num1 * num2;
+            if (operator === '/') result = num1 / num2;
+
+            calcDisplay.value = result;
+
+            currentInput = result.toString();
+            previousInput = '';
+            operator = '';
+            return;
+        }
+
+        if (['+', '-', '*', '/'].includes(value)){
+            if (currentInput === '') return;
+
+            operator = value;
+            previousInput = currentInput;
+            currentInput = '';
+             return;
+        }
+
+        currentInput += value;
+        calcDisplay.value = currentInput;
+    });
+});

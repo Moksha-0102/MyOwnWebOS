@@ -20,10 +20,60 @@
         </div> 
         
         <div class="start-menu" id="start-menu">
-            <div class="start-menu-item">Notepad</div>
-            <div class="start-menu-item">Calculator</div>
+            <div class="start-menu-item" id="menu-notepad">Notepad</div>
+            <div class="start-menu-item" id="menu-calculator">Calculator</div>
             <div class="start-menu-divider"></div>
             <div class="start-menu-item">Settings</div>
+        </div>
+
+        <div class="window" id="notepad-window" style="display: none; top: 100px; left: 150px;">
+            <div class="title-bar">
+                <div class="window-title">Notepad</div>
+                <div class="window-controls">
+                    <button id="np-min-btn">_</button>
+                    <button id="np-max-btn">☐</button>
+                    <button id="np-close-btn">X</button>
+                </div>
+            </div>
+            <div class="window-content" style="padding: 0; height: 100%;">
+                <textarea class="notepad-text"></textarea>
+            </div>
+        </div>
+
+        <div class="window" id="calculator-window" style="display:none; top: 150px; left: 200px; width: 250px;">
+            <div class="title-bar">
+                <div class="window-title">Calculator</div>
+                <div class="window-controls">
+                    <button id="calc-min-btn">_</button>
+                    <button id="calc-max-btn">☐</button>
+                    <button id="calc-close-btn">X</button>
+                </div>
+            </div>
+            <div class="window-content" style="padding: 10px;">
+                <input type="text" class="calc-display" id="calc-display" disabled value="0">
+
+                <div class="calculator-grid">
+                    <button class="calc-btn">7</button>
+                    <button class="calc-btn">8</button>
+                    <button class="calc-btn">9</button>
+                    <button class="calc-btn op-btn">/</button>
+
+                    <button class="calc-btn">4</button>
+                    <button class="calc-btn">5</button>
+                    <button class="calc-btn">6</button>
+                    <button class="calc-btn op-btn">*</button>
+
+                    <button class="calc-btn">1</button>
+                    <button class="calc-btn">2</button>
+                    <button class="calc-btn">3</button>
+                    <button class="calc-btn op-btn">-</button>
+
+                    <button class="calc-btn">0</button>
+                    <button class="calc-btn">C</button>
+                    <button class="calc-btn op-btn">=</button>
+                    <button class="calc-btn op-btn">+</button>
+                </div>
+            </div>            
         </div>
 
 
@@ -31,6 +81,8 @@
             <div class="taskbar-left">
                 <div class="start-button">Menu</div>
                 <div class="taskbar-app active" id="taskbar-app-1">My App</div>
+                <div class="taskbar-app" id="taskbar-notepad" style="display:none;">Notepad</div>
+                <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div> 
             </div>
             <div class="clock"></div>
         </div>
