@@ -50,6 +50,9 @@ document.addEventListener('mouseup', () => {
     isDragging = false;
 });
 
+
+
+
 const minBtn = document.getElementById('min-btn');
 const maxBtn = document.getElementById('max-btn');
 const closeBtn = document.getElementById('close-btn');
@@ -77,5 +80,30 @@ taskbarApp1.addEventListener('click', () => {
     } else {
         myWindow.style.display = 'none';
         taskbarApp1.classList.remove('active');
+    }
+});
+
+
+
+
+const startButton = document.querySelector('.start-button');
+const startMenu = document.getElementById('start-menu');
+
+startButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    if (startMenu.style.display === 'block') {
+        startMenu.style.display = 'none';
+        startButton.classList.remove('active');
+    } else {
+        startMenu.style.display = 'block';
+        startButton.classList.add('active');
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (startMenu.style.display === 'block' && !startMenu.contains(e.target)){
+        startMenu.style.display = 'none';
+        startButton.classList.remove('active');
     }
 });

@@ -128,3 +128,37 @@ body{
     border-right: 2px solid #fff;
     background-color: #d4d4d4;
 }
+
+.start-menu {
+    display: none;
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    width: 200px;
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    z-index: 1000;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+    padding: 2px;
+}
+
+.start-menu-item {
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.start-menu-item:hover {
+    background-color: #000080;
+    color: white;
+}
+
+.start-menu-divider {
+    height: 2px;
+    background-color: #808080;
+    border-bottom: 1px solid #fff;
+    margin: 5px 2px;
+}
