@@ -23,7 +23,7 @@
             <div class="start-menu-item" id="menu-notepad">Notepad</div>
             <div class="start-menu-item" id="menu-calculator">Calculator</div>
             <div class="start-menu-divider"></div>
-            <div class="start-menu-item">Settings</div>
+            <div class="start-menu-item" id="menu-settings">Settings</div>
         </div>
 
         <div class="window" id="notepad-window" style="display: none; top: 100px; left: 150px;">
@@ -76,6 +76,44 @@
             </div>            
         </div>
 
+        <div class="window" id='settings-window' style="display: none; top: 100px; left: 300px; width: 320px;">
+            <div class="title-bar">
+                <div class="window-title">Settings</div>
+                <div class="window-controls">
+                    <button id="set-min-btn">_</button>
+                    <button id="set-max-btn">☐</button>
+                    <button id="set-close-btn">X</button>
+                </div>
+            </div>
+
+            <div class="window-content" style="gap: 20px;">
+
+                <div class="settings-group">
+                    <label>Clock Format:</label>
+                    <select id="time-format-select">
+                        <option value="12">12-Hour (AM/PM)</option>
+                        <option value="24">24-Hour (Military)</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
+                    <label>Desktop Wallpaper</label>
+                    <select id="wallpaper-select">
+                        <option value="default">Default Blue</option>
+                        <option value="custom">Custom URL...</option>
+                        <option value="nasa">NASA Picture of the Day</option>
+                    </select>
+
+                    <input type="text" id="custom-wallpaper-url" placeholder="Paste image URL here..." style="display: none; margin-top: 8px;">
+
+                    <p id="nasa-error" style="color: red; font-size: 12px; display: none; margin-top: 8px; font-weight: bold;">NASA Image not available right now. Falling back to default.</p>
+                </div>
+                
+            </div>
+        </div>
+
+
+
 
         <div class="taskbar">
             <div class="taskbar-left">
@@ -83,6 +121,7 @@
                 <div class="taskbar-app active" id="taskbar-app-1">My App</div>
                 <div class="taskbar-app" id="taskbar-notepad" style="display:none;">Notepad</div>
                 <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div> 
+                <div class="taskbar-app" id="taskbar-settings" style="display: none;">Settings</div>
             </div>
             <div class="clock"></div>
         </div>

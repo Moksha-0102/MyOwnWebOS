@@ -1,3 +1,5 @@
+let use24HourTime = false;
+
 function updateClock(){
     const now = new Date();
     
@@ -5,22 +7,25 @@ function updateClock(){
     let minutes = now.getMinutes();
     let seconds = now.getSeconds();
 
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-    hours = hours ? hours : 12;
+    let displayHours = hours;
+    let ampm = ''
+    
+    if(!use24HourTime){
+        ampm = hours >= 12 ? ' PM' : ' AM';
+        displayHours = hours % 12;
+        displayHours = displayHours ? displayHours : 12;
+    } else {
+        displayHours = displayHours < 10 ? '0' + displayHours : displayHours;
+    }
 
     minutes = minutes < 10 ? '0' + minutes : minutes;
-
     const colon = seconds % 2 === 0 ? ':' : ' ';
 
-    const timeString = `${hours}${colon}${minutes} ${ampm}`;
-
+    const timeString = `${displayHours}${colon}${minutes} ${ampm}`;
     document.querySelector('.clock').textContent = timeString;
 }
 
 updateClock()
-
 setInterval(updateClock, 1000)
 
 
@@ -126,10 +131,6 @@ function registerApp(winId, taskbarId, menuId, minId, maxId, closeId){
 }
 
 
-registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', 'np-max-btn', 'np-close-btn');
-registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
-registerApp('myFirstWindow', 'taskbar-app-1', null, 'min-btn', 'max-btn', 'close-btn');
-
 
 
 const startButton = document.querySelector('.start-button');
@@ -154,6 +155,64 @@ document.addEventListener('click', (e) => {
     }
 });
 
+
+
+
+
+
+document.getElementById('time-format-select').addEventListener('change', (e) => {
+    use24HourTime = e.target.value === '24';
+    updateClock();
+});
+
+const wallpaperSelect = document.getElementById('wallpaper-select');
+const customUrlInput = document.getElementById('custom-wallpaper-url');
+const nasaError = document.getElementById('nasa-error');
+
+function setWallpaper(url){
+    document.body.style.backgroundImage = `url('${url}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundRepeat = 'no-repeat';
+}
+
+wallpaperSelect.addEventListener('change', async (e) => {
+    const choice = e.target.value;
+
+    customUrlInput.style.display = choice === 'custom' ? 'block' : 'none';
+    nasaError.style.display = 'none';
+
+    if (choice === 'default') {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '#2b6cb0';
+    }
+    else if (choice === 'custom'){
+        if (customUrlInput.value) setWallpaper(customUrlInput.value);
+    }
+    else if (choice === 'nasa'){
+        try {
+            const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY')
+            const data = await response.json();
+
+            if (data.media_type === 'image'){
+                setWallpaper(data.url);      
+            } else {
+                throw new Error('Today APOD is a video, not an image.');
+            }
+        } catch (error) {
+            console.error(error);
+            nasaError.style.display = 'block';
+            document.body.style.backgroundImage = 'none';
+            document.body.style.backgroundColor = '#2b6cb0'
+        }
+    }
+});
+
+customUrlInput.addEventListener('input', (e) => {
+    if (wallpaperSelect.value === 'custom'){
+        setWallpaper(e.target.value);
+    }
+});
 
 
 
@@ -211,3 +270,7 @@ calcButtons.forEach(button => {
     });
 });
 
+registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', 'np-max-btn', 'np-close-btn');
+registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
+registerApp('myFirstWindow', 'taskbar-app-1', null, 'min-btn', 'max-btn', 'close-btn');
+registerApp('settings-window', 'taskbar-settings', 'menu-settings', 'set-min-btn', 'set-max-btn', 'set-close-btn');
