@@ -247,3 +247,78 @@ body{
     font-size: 14px;
     font-family: sans-serif;
 }
+
+
+
+
+.desktop-environment {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 40px);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 1;
+}
+
+.desktop-icon {
+    width: 75px;
+    text-align: center;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px dotted transparent;
+}
+
+.desktop-icon:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px dotted #fff;
+}
+
+.icon-emoji {
+    font-size: 32px;
+}
+
+.icon-label {
+    color: white;
+    font-family: sans-serif;
+    font-size: 12px;
+    text-shadow: 1px 1px 2px black;
+    margin-top: 5px;
+}
+
+
+
+.context-menu {
+    position: absolute;
+    background-color: #c0c0c0;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #000;
+    border-right: 2px solid #000;
+    width: 150px;
+    z-index: 9999;
+    padding: 2px;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+}
+
+.context-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+.context-item:hover {
+    background-color: #000080;
+    color: white;
+}
+
+.context-divider {
+    height: 1px;
+    background-color: #808080;
+    border-bottom: 1px solid #fff;
+    margin: 3px 2px;
+}

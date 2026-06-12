@@ -274,3 +274,47 @@ registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', '
 registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
 registerApp('myFirstWindow', 'taskbar-app-1', null, 'min-btn', 'max-btn', 'close-btn');
 registerApp('settings-window', 'taskbar-settings', 'menu-settings', 'set-min-btn', 'set-max-btn', 'set-close-btn');
+
+
+
+
+
+
+const desktopNotepad = document.getElementById('desktop-notepad');
+const desktopCalc = document.getElementById('desktop-calculator');
+
+desktopNotepad.addEventListener('dblclick', () => {
+    document.getElementById('menu-notepad').click();
+});
+
+desktopCalc.addEventListener('dblclick', () => {
+    document.getElementById('menu-calculator').click();
+});
+
+const contextMenu = document.getElementById('desktop-context-menu');
+
+document.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.window') || e.target.closest('.taskbar') || e.target.closest('.start-menu')){
+        return;
+    }
+
+    e.preventDefault();
+
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = e.clientX + 'px';
+    contextMenu.style.top = e.clientY + 'px';
+});
+
+document.addEventListener('click', () => {
+    if (contextMenu.style.display === 'block'){
+        contextMenu.style.display = 'none';
+    }
+});
+
+document.getElementById('context-refresh').addEventListener('click', () => {
+    location.reload()
+})
+
+document.getElementById('context-settings').addEventListener('click', () => {
+    document.getElementById('menu-settings').click();
+})
