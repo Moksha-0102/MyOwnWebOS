@@ -3,7 +3,8 @@
     <head>
         <link rel="stylesheet" href="index.css">
     </head>
-    <body>
+    <body>       
+
         <div class="desktop-environment">
             <div class="desktop-icon" id="desktop-notepad" style="top: 20px; left: 20px;" draggable="false">
                 <div class="icon-emoji">📝</div>
@@ -100,6 +101,14 @@
                 </div>
 
                 <div class="settings-group">
+                    <label>Welcome Screen:</label>
+                    <select id="welcome-toggle-select">
+                        <option value="show">Show on boot</option>
+                        <option value="hide">Hide on boot</option>
+                    </select>
+                </div>
+
+                <div class="settings-group">
                     <label>Desktop Labels:</label>
                     <select id="icon-label-select">
                         <option value="show">Show Labels</option>
@@ -136,6 +145,32 @@
             <div class="clock"></div>
         </div>
         
+
+        <div id="welcome-overlay" class="welcome-overlay" style="display: none;"></div>
+        
+        <div class="window" id="welcome-window" style="display: none; top: 150px; left: 30%; width: 400px; z-index: 99999;">
+            <div class="title-bar">
+                <div class="window-title">Welcome to WebOS</div>
+                <div class="window-controls">
+                    <button id="welcome-close-btn">X</button>
+                </div>
+            </div>
+
+            <div class="window-content" style="gap: 15px; text-align: center;">
+                <h2 style="margin: 0; padding-top: 10px;">Hello, World!</h2>
+                <p style="font-size: 14px; text-align: left; line-height: 1.4;">
+                    Welcome to my custom WebOS. Feel free to drag icons, open applications, and right-click the desktop to personalise your workspace.
+                </p>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-bottom: 5px;">
+                    <label style="font-size: 12px; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="welcome-dont-show"> Don't show this again
+                    </label>
+                    <button id="welcome-start-btn" style="padding: 5px 15px; font-weight: bold; cursor: pointer;">Let's Go!</button>
+                </div>
+            </div>
+        </div> 
+
         <script src="index.js"></script>
     </body>
 </html>

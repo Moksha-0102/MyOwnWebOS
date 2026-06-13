@@ -41,8 +41,13 @@ let offsetY = 0;
 document.addEventListener('mousedown', (e) => {
     const clickedWindow = e.target.closest('.window');
     if (clickedWindow) {
-        highestZIndex++;
-        clickedWindow.style.zIndex = highestZIndex;
+
+        if(clickedWindow.id === 'welcome-window'){
+            clickedWindow.style.zIndex = 99999;
+        } else {
+            highestZIndex++;
+            clickedWindow.style.zIndex = highestZIndex;
+        }
     }
 
     const titleBar = e.target.closest('.title-bar');
@@ -392,3 +397,45 @@ document.querySelectorAll('.desktop-icon').forEach(icon => {
     if (savedX) icon.style.left = savedX;
     if (savedY) icon.style.top = savedY;
 })
+
+
+
+
+const welcomeOverlay = document.getElementById('welcome-overlay');
+const welcomeWindow = document.getElementById('welcome-window');
+const welcomeStartBtn = document.getElementById('welcome-start-btn');
+const welcomeCloseBtn = document.getElementById('welcome-close-btn');
+const welcomeDontShow = document.getElementById('welcome-dont-show');
+const welcomeToggleSelect = document.getElementById('welcome-toggle-select');
+
+const showWelcome = localStorage.getItem('showWelcomeScreen');
+
+if (showWelcome === 'false'){
+    welcomeToggleSelect.value = 'hide';
+} else {
+    welcomeOverlay.style.display = 'block';
+    welcomeWindow.style.display = 'block';
+    welcomeToggleSelect.value = 'show';
+}
+
+function closeWelcomeScreen(){
+    if(welcomeDontShow.checked){
+        localStorage.setItem('showWelcomeScreen', 'false');
+        welcomeToggleSelect.value = 'hide';
+    }
+    welcomeOverlay.style.display = 'none';
+    welcomeWindow.style.display = 'none';
+}
+
+welcomeStartBtn.addEventListener('click', closeWelcomeScreen);
+welcomeCloseBtn.addEventListener('click', closeWelcomeScreen);
+
+welcomeToggleSelect.addEventListener('change', (e) => {
+    if (e.target.value === 'hide'){
+        localStorage.setItem('showWelcomeScreen', 'false');
+        welcomeDontShow.checked = true;
+    } else {
+        localStorage.setItem('showWelcomeScreen', 'true');
+        welcomeDontShow.checked = false;
+    }
+});
