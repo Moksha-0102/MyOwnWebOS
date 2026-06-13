@@ -37,6 +37,7 @@ let draggedWindow = null;
 let offsetX = 0;
 let offsetY = 0;
 
+
 document.addEventListener('mousedown', (e) => {
     const clickedWindow = e.target.closest('.window');
     if (clickedWindow) {
@@ -45,12 +46,21 @@ document.addEventListener('mousedown', (e) => {
     }
 
     const titleBar = e.target.closest('.title-bar');
+    const desktopIcon = e.target.closest('.desktop-icon');
+
     if (titleBar && e.target.tagName !== 'BUTTON') {
         isDragging = true;
         draggedWindow = clickedWindow;
 
         offsetX = e.clientX - draggedWindow.offsetLeft;
         offsetY = e.clientY - draggedWindow.offsetTop;
+    }
+    else if (desktopIcon){
+        e.preventDefault();
+        isDragging = true;
+        draggedWindow = desktopIcon;
+        offsetX = e.clientX - desktopIcon.offsetLeft;
+        offsetY = e.clientY - desktopIcon.offsetTop;
     }
 });
 
@@ -60,20 +70,30 @@ document.addEventListener('mousemove', (e) => {
     let newX = e.clientX - offsetX;
     let newY = e.clientY - offsetY;
 
-    if (newY < 0){
-        newY = 0;
+    if (newX < 0) newX = 0;
+    if (newY < 0) newY = 0; 
+
+    let bottomLimit;
+
+    if(draggedWindow.classList.contains('desktop-icon')){
+        bottomLimit = window.innerHeight - 40 - draggedWindow.offsetHeight;
+    } else {
+        bottomLimit = window.innerHeight - 70;
     }
 
-    let bottomLimit = window.innerHeight - 70;
-    if (newY > bottomLimit){
-        newY = bottomLimit;
-    }
+    if(newY > bottomLimit) newY = bottomLimit;
 
     draggedWindow.style.left = newX + 'px';
     draggedWindow.style.top = newY + 'px';
 });
 
 document.addEventListener('mouseup', () => {
+
+    if (isDragging && draggedWindow && draggedWindow.classList.contains('desktop-icon')){
+        localStorage.setItem(draggedWindow.id + '-x', draggedWindow.style.left);
+        localStorage.setItem(draggedWindow.id + '-y', draggedWindow.style.top);
+    }
+
     isDragging = false;
     draggedWindow = null;
 });
@@ -180,7 +200,10 @@ wallpaperSelect.addEventListener('change', async (e) => {
     const choice = e.target.value;
 
     customUrlInput.style.display = choice === 'custom' ? 'block' : 'none';
+    
     nasaError.style.display = 'none';
+    nasaError.style.color = 'red';
+    nasaError.textContent = 'NASA Image not available right now. Falling back to default.';
 
     if (choice === 'default') {
         document.body.style.backgroundImage = 'none';
@@ -190,20 +213,46 @@ wallpaperSelect.addEventListener('change', async (e) => {
         if (customUrlInput.value) setWallpaper(customUrlInput.value);
     }
     else if (choice === 'nasa'){
+
+        nasaError.style.color = '#000080';
+        nasaError.textContent = 'Connecting to NASA servers...';
+        nasaError.style.display = 'block';
+        document.body.style.cursor = 'wait';
+
         try {
             const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY')
             const data = await response.json();
 
             if (data.media_type === 'image'){
-                setWallpaper(data.url);      
+
+                nasaError.textContent = 'Downloading high-res wallpaper...';
+
+                const virtualImage = new Image();
+                virtualImage.src = data.url;
+
+                virtualImage.onload = () => {
+                    setWallpaper(data.url);
+                    nasaError.style.display = 'none';
+                    document.body.style.cursor = 'default';
+                };
+
+                virtualImage.onerror = () => {
+                    throw new Error('NASA image file is corrupted or blocked.');
+                };
+
             } else {
                 throw new Error('Today APOD is a video, not an image.');
             }
         } catch (error) {
             console.error(error);
+            nasaError.style.color = 'red';
+            nasaError.textContent = 'NASA Image not availabe right now. Falling back to default.';
             nasaError.style.display = 'block';
             document.body.style.backgroundImage = 'none';
             document.body.style.backgroundColor = '#2b6cb0'
+            document.body.style.cursor = 'default';
+        } finally {
+            document.body.style.cursor = 'default'
         }
     }
 });
@@ -270,12 +319,6 @@ calcButtons.forEach(button => {
     });
 });
 
-registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', 'np-max-btn', 'np-close-btn');
-registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
-registerApp('myFirstWindow', 'taskbar-app-1', null, 'min-btn', 'max-btn', 'close-btn');
-registerApp('settings-window', 'taskbar-settings', 'menu-settings', 'set-min-btn', 'set-max-btn', 'set-close-btn');
-
-
 
 
 
@@ -317,4 +360,35 @@ document.getElementById('context-refresh').addEventListener('click', () => {
 
 document.getElementById('context-settings').addEventListener('click', () => {
     document.getElementById('menu-settings').click();
+})
+
+document.getElementById('icon-label-select').addEventListener('change', (e) => {
+    const desktopEnv = document.querySelector('.desktop-environment');
+    if (e.target.value === 'hide'){
+        desktopEnv.classList.add('hide-labels');
+    } else {desktopEnv.classList.remove('hide-labels');}
+})
+
+
+
+
+
+
+
+
+
+
+registerApp('notepad-window', 'taskbar-notepad', 'menu-notepad', 'np-min-btn', 'np-max-btn', 'np-close-btn');
+registerApp('calculator-window', 'taskbar-calculator', 'menu-calculator', 'calc-min-btn', 'calc-max-btn', 'calc-close-btn');
+registerApp('settings-window', 'taskbar-settings', 'menu-settings', 'set-min-btn', 'set-max-btn', 'set-close-btn');
+
+
+
+
+document.querySelectorAll('.desktop-icon').forEach(icon => {
+    const savedX = localStorage.getItem(icon.id + '-x');
+    const savedY = localStorage.getItem(icon.id + '-y');
+
+    if (savedX) icon.style.left = savedX;
+    if (savedY) icon.style.top = savedY;
 })
