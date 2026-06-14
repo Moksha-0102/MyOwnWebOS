@@ -476,7 +476,9 @@ if (npSaveBtn){
     npSaveBtn.addEventListener('click', () => {
         const fileName = npFileName.value.trim() || 'Untitled.txt';
 
-        localStorage.setItem('webos-file-' + fileName, notepadTextarea.value);
+        const newKey = 'webos-file-' + currentDirectory + '/' + fileName;
+
+        localStorage.setItem(newKey, notepadTextarea.value);
         showStatus('Saved!', 'green');
         refreshFileExplorer();
     });
@@ -485,12 +487,30 @@ if (npSaveBtn){
 if (npClearBtn) {
     npClearBtn.addEventListener('click', () => {
         const fileName = npFileName.value.trim() || 'Untitled.txt';
+        const currentKey = 'webos-file-' + currentDirectory + '/' + fileName;
+        const fileData = localStorage.getItem(currentKey);
 
-        if (confirm(`Are you sure you want to permanently delete "${fileName}"`)){
-            localStorage.removeItem('webos-file-' + fileName);
-            notepadTextarea.value = '';
-            showStatus('Deleted!', 'red');
-            refreshFileExplorer();
+        if (fileData !== null){
+
+            if (currentDirectory === 'Trash'){
+                if (confirm(`Are you sure you want to PERMANENTLY delete "${fileName}"?`)){
+                    localStorage.removeItem(currentKey);
+                    notepadTextarea.value = '';
+                    showStatus('Deleted!', 'red');
+                    refreshFileExplorer();
+                }
+            } 
+            else {
+                if (confirm(`Move "${fileName}" to Recycle Bin?`)){
+                    localStorage.setItem('webos-file-Trash/' + fileName, fileData);
+                    localStorage.removeItem(currentKey);
+
+                    notepadTextarea.value = '';
+                    showStatus('Item moved to Recycle Bin!', 'red');
+                    refreshFileExplorer()
+
+                }
+            }
         }
     });
 }
@@ -510,6 +530,19 @@ document.getElementById('menu-explorer').addEventListener('click', refreshFileEx
 
 const fileContextMenu = document.getElementById('file-context-menu');
 let targetFileForMenu = null;
+let currentDirectory = 'Root';
+const sidebarItems = document.querySelectorAll('.sidebar-item');
+const breadcrumbs = document.getElementById('exp-breadcrumbs');
+
+sidebarItems.forEach(item => {
+    item.addEventListener('click', () => {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        currentDirectory = item.getAttribute('data-path');
+        breadcrumbs.textContent = currentDirectory;
+        refreshFileExplorer();
+    })
+})
 
 document.addEventListener('click', () => {
     if (fileContextMenu.style.display && fileContextMenu.style.display === 'block'){
@@ -521,70 +554,134 @@ const fileListContainer = document.getElementById('file-list-container');
 
 function refreshFileExplorer(){
     fileListContainer.innerHTML = '';
-    let hasFiles = false;
+    let hasContent = false;
+
+    const foldersToDraw = new Set();
+    const filesToDraw = [];
+
+    if (currentDirectory === 'Root'){
+        foldersToDraw.add('Documents');
+        foldersToDraw.add('Pictures');
+    }
 
     for(let i = 0; i < localStorage.length; i++){
         const key = localStorage.key(i);
 
         if(key.startsWith('webos-file-')){
-            hasFiles = true;
 
-            const fileName = key.replace('webos-file-', '');
+            const fullPath = key.replace('webos-file-', '');
 
-            const fileDiv = document.createElement('div');
-            fileDiv.className = 'file-item';
-            fileDiv.innerHTML = `
-                <div class='file-item-emoji'>📄</div>
-                <div class='file-item-name'>${fileName}</div>    
-            `;
+            if (fullPath.startsWith(currentDirectory + '/')){
+                const relativePath = fullPath.replace(currentDirectory + '/', '');
+                const nextSlashIndex = relativePath.indexOf('/');
 
-            fileDiv.addEventListener('dblclick', () => {
-                document.getElementById('menu-notepad').click();
-                document.getElementById('np-file-name').value = fileName;
-                document.getElementById('notepad-textarea').value = localStorage.getItem(key);
-
-                const npWin = document.getElementById('notepad-window');
-                highestZIndex++;
-                npWin.style.zIndex = highestZIndex;
-            });
-
-            fileDiv.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                targetFileForMenu = fileName;
-
-                fileContextMenu.style.display = 'block';
-                fileContextMenu.style.left = e.clientX + 'px';
-                fileContextMenu.style.top = e.clientY + 'px';
-            });
-            
-            fileListContainer.appendChild(fileDiv);
+                if (nextSlashIndex === -1){
+                    filesToDraw.push({fullPath: fullPath, fileName: relativePath, key: key});
+                } else {
+                    const folderName = relativePath.substring(0, nextSlashIndex);
+                    foldersToDraw.add(folderName);
+                }
+            }
         }
     }
 
-    if(!hasFiles){
-        fileListContainer.innerHTML = '<p style="color: grau; font-size: 12px; width: 100%; grid-column: 1 / -1; text-align: center;">This folder is empty.</p>';
+    foldersToDraw.forEach(folderName => {
+        hasContent = true;
+        const folderDiv = document.createElement('div');
+        folderDiv.className = 'file-item';
+        folderDiv.innerHTML = `
+            <div class='file-item-emoji'>📁</div>
+            <div class='file-item-name'>${folderName}</div>
+        `;
+
+        folderDiv.addEventListener('dblclick', () => {
+            currentDirectory = currentDirectory + '/' + folderName;
+
+            breadcrumbs.textContent = currentDirectory;
+            sidebarItems.forEach(i => i.classList.remove('active'));
+
+            refreshFileExplorer();
+        });
+
+        fileListContainer.appendChild(folderDiv);
+    });
+
+    filesToDraw.forEach(file => {
+        hasContent = true;
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'file-item';
+        fileDiv.innerHTML = `
+            <div class='file-item-emoji'>📄</div>
+            <div class='file-item-name'>${file.fileName}</div>
+        `;
+
+        fileDiv.addEventListener('dblclick', () => {
+            document.getElementById('menu-notepad').click();
+            document.getElementById('np-file-name').value = file.fileName;
+            document.getElementById('notepad-textarea').value = localStorage.getItem(file.key);
+
+            const npWin = document.getElementById('notepad-window');
+            highestZIndex++;
+            npWin.style.zIndex = highestZIndex;
+        });
+
+        fileDiv.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            targetFileForMenu = file.fullPath;
+            fileContextMenu.style.display = 'block';
+            fileContextMenu.style.left = e.clientX + 'px';
+            fileContextMenu.style.top = e.clientY + 'px';
+        });
+
+        fileListContainer.appendChild(fileDiv);
+    });
+
+    if(!hasContent){
+        fileListContainer.innerHTML = '<p style="color: gray; font-size: 12px; width: 100%; grid-column: 1 / -1; text-align: center;">This folder is empty.</p>';
     }
 }
 
 document.getElementById('file-context-delete').addEventListener('click', () => {
     if (targetFileForMenu){
-        if (confirm(`Are you sure you want to permanently delete "${targetFileForMenu}"?`)){
-            localStorage.removeItem('webos-file-' + targetFileForMenu);
-            refreshFileExplorer();
+        const fileName = targetFileForMenu.substring(targetFileForMenu.lastIndexOf('/') + 1)
+
+        if (currentDirectory === 'Trash'){
+            if ( confirm(`Are you sure you want to PERMANENTLY delete "${fileName}"? This cannot be undone.`)){
+                localStorage.removeItem('webos-file-' + targetFileForMenu);
+                refreshFileExplorer();
+            }
+        } else {
+            if (confirm(`Move this file to the Recycle Bin?`)){
+                const fileData = localStorage.getItem('webos-file-' + targetFileForMenu);
+                const fileName = targetFileForMenu.substring(targetFileForMenu.lastIndexOf('/') + 1);
+
+                localStorage.setItem('webos-file-Trash/' + fileName, fileData);
+                localStorage.removeItem('webos-file-' + targetFileForMenu);
+                refreshFileExplorer();
+            }
         }
     }
 })
 
 document.getElementById('file-context-rename').addEventListener('click', () => {
     if (targetFileForMenu) {
+
+        const lastSlashIndex = targetFileForMenu.lastIndexOf('/');
+        let path = 'Root';
+        let oldName = targetFileForMenu;
+
+        if (lastSlashIndex !== -1) {
+            path = targetFileForMenu.substring(0, lastSlashIndex);
+            oldName = targetFileForMenu.substring(lastSlashIndex + 1);
+        }
+
         const newName = prompt(`Enter a new name for "${targetFileForMenu}":`, targetFileForMenu);
 
         if (newName && newName.trim() !== '' && newName !== targetFileForMenu){
             const fileData = localStorage.getItem('webos-file-' + targetFileForMenu);
 
-            localStorage.setItem('webos-file-' + newName.trim(), fileData);
+            localStorage.setItem('webos-file-' + path + '/' + newName.trim(), fileData);
             localStorage.removeItem('webos-file-' + targetFileForMenu);
 
             refreshFileExplorer();
@@ -620,4 +717,4 @@ function bootOS() {
     refreshFileExplorer()
 }
 
-document.addEventListener('DOMContentLoaded', bootOS);
+document.addEventListener('DOMContentLoaded', bootOS)

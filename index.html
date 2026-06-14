@@ -75,8 +75,28 @@
                     <button id="exp-close-btn">X</button>
                 </div>
             </div>
-            <div class="window-content" style="padding: 10px; background-color: #fff; overflow-y: auto;">
-                <div class="file-grid" id="file-list-container"></div>
+
+            <div class="explorer-toolbar">
+                <div class="explorer-nav-btns">
+                    <button id="exp-back-btn" disabled>←</button>
+                    <button id="exp-fwd-btn" disabled>→</button>
+                    <button id="exp-up-btn">↑</button>
+                </div>
+                <div class="explorer-address-bar" id="exp-breadcrumbs">Root</div>
+                <input type="text" class="explorer-search" placeholder="Search...">
+            </div>
+
+            <div class="explorer-body">
+                <div class="explorer-sidebar">
+                    <div class="sidebar-item active" data-path="Root">🏠 Root</div>
+                    <div class="sidebar-item" data-path="Root/Documents">📄 Documents</div>
+                    <div class="sidebar-item" data-path="Root/Pictures">🖼️ Pictures</div>
+                    <div class="sidebar-item" data-path="Trash">🗑️ Recycle Bin</div>
+                </div>
+
+                <div class="window-content" style="padding: 10px; background-color: #fff; overflow-y: auto; flex-grow: 1;">
+                    <div class="file-grid" id="file-list-container"></div>
+                </div>
             </div>
         </div>
 
