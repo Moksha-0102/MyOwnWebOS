@@ -15,6 +15,11 @@
                 <div class="icon-emoji">🧮</div>
                 <div class="icon-label">Calculator</div>
             </div>
+
+            <div class="desktop-icon" id="desktop-explorer" style="top: 200px; left: 20px;" draggable="false">
+                <div class="icon-emoji">📁</div>
+                <div class="icon-label">File Manager</div>
+            </div>
         </div>
 
         <div class="context-menu" id="desktop-context-menu" style="display: none;">
@@ -22,15 +27,21 @@
             <div class="context-divider"></div>
             <div class="context-item" id="context-settings">Personalize...</div>
         </div>
+        <div class="context-menu" id="file-context-menu" style="display: none;">
+            <div class="context-item" id="file-context-rename">Rename</div>
+            <div class="context-divider"></div>
+            <div class="context-item" id="file-context-delete" style="color: darkred;">Delete</div>
+        </div>
         
         <div class="start-menu" id="start-menu">
             <div class="start-menu-item" id="menu-notepad">Notepad</div>
             <div class="start-menu-item" id="menu-calculator">Calculator</div>
+            <div class="start-menu-item" id="menu-explorer">File Manager</div>
             <div class="start-menu-divider"></div>
             <div class="start-menu-item" id="menu-settings">Settings</div>
         </div>
 
-        <div class="window" id="notepad-window" style="display: none; top: 100px; left: 150px;">
+        <div class="window" id="notepad-window" style="display: none; top: 100px; left: 150px; width: 400px; height: 500px;">
             <div class="title-bar">
                 <div class="window-title">Notepad</div>
                 <div class="window-controls">
@@ -40,9 +51,37 @@
                 </div>
             </div>
             <div class="window-content" style="padding: 0; height: 100%;">
-                <textarea class="notepad-text"></textarea>
+
+                <div class="app-toolbar">
+                    <input type="text" id="np-file-name" value="Untitled.txt" style="width: 100px; font-size: 12px; padding: 2px;">
+                    <button id="np-save-btn">Save</button>
+                    <button id="np-clear-btn">Delete</button>
+                    <span id="np-status-text" style="font-size: 12px; color: green; display: none; font-weight: bold;">Saved</span>
+                </div>
+
+                <textarea class="notepad-text" id="notepad-textarea"></textarea>
             </div>
         </div>
+
+
+
+
+        <div class="window" id="explorer-window" style="display: none; top: 120px; left: 100px; width: 450px; height: 300px;">
+            <div class="title-bar">
+                <div class="window-title">File Explorer</div>
+                <div class="window-controls">
+                    <button id="exp-min-btn">_</button>
+                    <button id="exp-max-btn">☐</button>
+                    <button id="exp-close-btn">X</button>
+                </div>
+            </div>
+            <div class="window-content" style="padding: 10px; background-color: #fff; overflow-y: auto;">
+                <div class="file-grid" id="file-list-container"></div>
+            </div>
+        </div>
+
+
+
 
         <div class="window" id="calculator-window" style="display:none; top: 150px; left: 200px; width: 250px;">
             <div class="title-bar">
@@ -139,7 +178,8 @@
             <div class="taskbar-left">
                 <div class="start-button">Menu</div>
                 <div class="taskbar-app" id="taskbar-notepad" style="display:none;">Notepad</div>
-                <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div> 
+                <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div>
+                <div class="taskbar-app" id="taskbar-explorer" style="display: none;">File Manager</div> 
                 <div class="taskbar-app" id="taskbar-settings" style="display: none;">Settings</div>
             </div>
             <div class="clock"></div>

@@ -213,9 +213,17 @@ wallpaperSelect.addEventListener('change', async (e) => {
     if (choice === 'default') {
         document.body.style.backgroundImage = 'none';
         document.body.style.backgroundColor = '#2b6cb0';
+        localStorage.removeItem('wallpaper-url')
+        localStorage.removeItem('nasa-img')
+        localStorage.setItem('wallp-opt', 'default')
     }
     else if (choice === 'custom'){
-        if (customUrlInput.value) setWallpaper(customUrlInput.value);
+        if (customUrlInput.value){
+            setWallpaper(customUrlInput.value);
+            localStorage.setItem('wallpaper-url', customUrlInput.value);
+            localStorage.removeItem('nasa-img')
+            localStorage.setItem('wallp-opt', 'custom')
+        };
     }
     else if (choice === 'nasa'){
 
@@ -239,6 +247,9 @@ wallpaperSelect.addEventListener('change', async (e) => {
                     setWallpaper(data.url);
                     nasaError.style.display = 'none';
                     document.body.style.cursor = 'default';
+                    localStorage.setItem('nasa-img', data.url)
+                    localStorage.removeItem(customUrlInput.value);
+                    localStorage.setItem('wallp-opt', 'nasa');
                 };
 
                 virtualImage.onerror = () => {
@@ -421,7 +432,7 @@ if (showWelcome === 'false'){
 function closeWelcomeScreen(){
     if(welcomeDontShow.checked){
         localStorage.setItem('showWelcomeScreen', 'false');
-        welcomeToggleSelect.value = 'hide';
+        welcomeToggleSelect.value = 'hide'; 
     }
     welcomeOverlay.style.display = 'none';
     welcomeWindow.style.display = 'none';
@@ -439,3 +450,174 @@ welcomeToggleSelect.addEventListener('change', (e) => {
         welcomeDontShow.checked = false;
     }
 });
+
+
+
+
+
+const notepadTextarea = document.getElementById('notepad-textarea');
+const npFileName = document.getElementById('np-file-name');
+const npSaveBtn = document.getElementById('np-save-btn');
+const npClearBtn = document.getElementById('np-clear-btn');
+const npStatusText = document.getElementById('np-status-text');
+
+function showStatus(message, color = 'green'){
+    if (!npStatusText) return;
+    npStatusText.textContent = message;
+    npStatusText.style.color = color;
+    npStatusText.style.display = 'inline';
+
+    setTimeout(() => {
+        npStatusText.style.display = 'none';
+    }, 2000);
+}
+
+if (npSaveBtn){
+    npSaveBtn.addEventListener('click', () => {
+        const fileName = npFileName.value.trim() || 'Untitled.txt';
+
+        localStorage.setItem('webos-file-' + fileName, notepadTextarea.value);
+        showStatus('Saved!', 'green');
+        refreshFileExplorer();
+    });
+}
+
+if (npClearBtn) {
+    npClearBtn.addEventListener('click', () => {
+        const fileName = npFileName.value.trim() || 'Untitled.txt';
+
+        if (confirm(`Are you sure you want to permanently delete "${fileName}"`)){
+            localStorage.removeItem('webos-file-' + fileName);
+            notepadTextarea.value = '';
+            showStatus('Deleted!', 'red');
+            refreshFileExplorer();
+        }
+    });
+}
+
+
+
+
+registerApp('explorer-window', 'taskbar-explorer', 'menu-explorer', 'exp-min-btn', 'exp-max-btn', 'exp-close-btn');
+
+const desktopExplorer = document.getElementById('desktop-explorer');
+desktopExplorer.addEventListener('dblclick', () => {
+    document.getElementById('menu-explorer').click();
+    refreshFileExplorer()
+});
+
+document.getElementById('menu-explorer').addEventListener('click', refreshFileExplorer);
+
+const fileContextMenu = document.getElementById('file-context-menu');
+let targetFileForMenu = null;
+
+document.addEventListener('click', () => {
+    if (fileContextMenu.style.display && fileContextMenu.style.display === 'block'){
+        fileContextMenu.style.display = 'none';
+    }
+})
+
+const fileListContainer = document.getElementById('file-list-container');
+
+function refreshFileExplorer(){
+    fileListContainer.innerHTML = '';
+    let hasFiles = false;
+
+    for(let i = 0; i < localStorage.length; i++){
+        const key = localStorage.key(i);
+
+        if(key.startsWith('webos-file-')){
+            hasFiles = true;
+
+            const fileName = key.replace('webos-file-', '');
+
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            fileDiv.innerHTML = `
+                <div class='file-item-emoji'>📄</div>
+                <div class='file-item-name'>${fileName}</div>    
+            `;
+
+            fileDiv.addEventListener('dblclick', () => {
+                document.getElementById('menu-notepad').click();
+                document.getElementById('np-file-name').value = fileName;
+                document.getElementById('notepad-textarea').value = localStorage.getItem(key);
+
+                const npWin = document.getElementById('notepad-window');
+                highestZIndex++;
+                npWin.style.zIndex = highestZIndex;
+            });
+
+            fileDiv.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                targetFileForMenu = fileName;
+
+                fileContextMenu.style.display = 'block';
+                fileContextMenu.style.left = e.clientX + 'px';
+                fileContextMenu.style.top = e.clientY + 'px';
+            });
+            
+            fileListContainer.appendChild(fileDiv);
+        }
+    }
+
+    if(!hasFiles){
+        fileListContainer.innerHTML = '<p style="color: grau; font-size: 12px; width: 100%; grid-column: 1 / -1; text-align: center;">This folder is empty.</p>';
+    }
+}
+
+document.getElementById('file-context-delete').addEventListener('click', () => {
+    if (targetFileForMenu){
+        if (confirm(`Are you sure you want to permanently delete "${targetFileForMenu}"?`)){
+            localStorage.removeItem('webos-file-' + targetFileForMenu);
+            refreshFileExplorer();
+        }
+    }
+})
+
+document.getElementById('file-context-rename').addEventListener('click', () => {
+    if (targetFileForMenu) {
+        const newName = prompt(`Enter a new name for "${targetFileForMenu}":`, targetFileForMenu);
+
+        if (newName && newName.trim() !== '' && newName !== targetFileForMenu){
+            const fileData = localStorage.getItem('webos-file-' + targetFileForMenu);
+
+            localStorage.setItem('webos-file-' + newName.trim(), fileData);
+            localStorage.removeItem('webos-file-' + targetFileForMenu);
+
+            refreshFileExplorer();
+        }
+    }
+})
+
+
+
+
+function bootOS() {
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    const wallpOpt = localStorage.getItem('wallp-opt');
+    const wallpDropDown = document.getElementById('wallpaper-select');
+    if(wallpOpt === 'default'){
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '#2b6cb0';
+        wallpDropDown.selectedIndex = 0;
+    } else if (wallpOpt === 'custom'){
+        setWallpaper(localStorage.getItem('wallpaper-url'))
+        wallpDropDown.selectedIndex = 1;
+    } else if (wallpOpt === 'nasa'){
+        setWallpaper(localStorage.getItem('nasa-img'));
+        wallpDropDown.selectedIndex = 2;
+    } else {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '#2b6cb0';
+        wallpDropDown.selectedIndex = 0;
+    }
+
+    refreshFileExplorer()
+}
+
+document.addEventListener('DOMContentLoaded', bootOS);
