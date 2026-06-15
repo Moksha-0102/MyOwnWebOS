@@ -28,6 +28,7 @@
             <div class="context-item" id="context-settings">Personalize...</div>
         </div>
         <div class="context-menu" id="file-context-menu" style="display: none;">
+            <div class="context-item" id="file-context-restore" style="display: none; color: green;">Restore to Root</div>
             <div class="context-item" id="file-context-rename">Rename</div>
             <div class="context-divider"></div>
             <div class="context-item" id="file-context-delete" style="color: darkred;">Delete</div>
@@ -103,7 +104,7 @@
 
 
 
-        <div class="window" id="calculator-window" style="display:none; top: 150px; left: 200px; width: 250px;">
+        <div class="window" id="calculator-window" style="display:none; top: 150px; left: 200px; width: 250px; height: 350px;">
             <div class="title-bar">
                 <div class="window-title">Calculator</div>
                 <div class="window-controls">
@@ -139,7 +140,7 @@
             </div>            
         </div>
 
-        <div class="window" id='settings-window' style="display: none; top: 100px; left: 300px; width: 320px;">
+        <div class="window" id='settings-window' style="display: none; top: 100px; left: 300px; width: 320px; height: 400px;">
             <div class="title-bar">
                 <div class="window-title">Settings</div>
                 <div class="window-controls">
@@ -186,6 +187,15 @@
                     <input type="text" id="custom-wallpaper-url" placeholder="Paste image URL here..." style="display: none; margin-top: 8px;">
 
                     <p id="nasa-error" style="color: red; font-size: 12px; display: none; margin-top: 8px; font-weight: bold;">NASA Image not available right now. Falling back to default.</p>
+                </div>
+
+                <div class="settings-group">
+                    <label>Default Save Location:</label>
+                    <select id="default-save-select">
+                        <option value="Root/Documents">Documents</option>
+                        <option value="Root/Pictures">Pictures</option>
+                        <option value="Root">Root</option>
+                    </select>
                 </div>
                 
             </div>

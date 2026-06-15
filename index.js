@@ -40,8 +40,8 @@ let offsetY = 0;
 
 document.addEventListener('mousedown', (e) => {
     const clickedWindow = e.target.closest('.window');
+    
     if (clickedWindow) {
-
         if(clickedWindow.id === 'welcome-window'){
             clickedWindow.style.zIndex = 99999;
         } else {
@@ -56,6 +56,7 @@ document.addEventListener('mousedown', (e) => {
     if (titleBar && e.target.tagName !== 'BUTTON') {
         isDragging = true;
         draggedWindow = clickedWindow;
+        draggedWindow.style.transition = 'none';
 
         offsetX = e.clientX - draggedWindow.offsetLeft;
         offsetY = e.clientY - draggedWindow.offsetTop;
@@ -69,44 +70,44 @@ document.addEventListener('mousedown', (e) => {
     }
 });
 
-document.addEventListener('mousemove', (e) => {
-    if (!isDragging || !draggedWindow) return;
+document.addEventListener('dblclick', (e) => {
+    const titleBar = e.target.closest('.title-bar');
+    if (titleBar && e.target.tagName !== 'BUTTON'){
+        const win = titleBar.closest('.window');
+        toggleMaximize(win);
+    }
+});
 
-    let newX = e.clientX - offsetX;
-    let newY = e.clientY - offsetY;
 
-    if (newX < 0) newX = 0;
-    if (newY < 0) newY = 0; 
 
-    let bottomLimit;
+function toggleMaximize (win){
+    win.style.transition = 'top 0.2s ease-out, left 0.2s ease-out, width 0.2s ease-out, height 0.2s ease-out';
 
-    if(draggedWindow.classList.contains('desktop-icon')){
-        bottomLimit = window.innerHeight - 40 - draggedWindow.offsetHeight;
+    if (win.classList.contains('maximized')){
+        win.classList.remove('maximized');
+        win.style.top = win.getAttribute('data-prev-top');
+        win.style.left = win.getAttribute('data-prev-left');
+        win.style.width = win.getAttribute('data-prev-width');
+        win.style.height = win.getAttribute('data-prev-height');
     } else {
-        bottomLimit = window.innerHeight - 70;
+        win.setAttribute('data-prev-top', win.style.top || win.offsetTop + 'px');
+        win.setAttribute('data-prev-left', win.style.left || win.offsetLeft + 'px');
+        win.setAttribute('data-prev-width', win.getBoundingClientRect().width + 'px');
+        win.setAttribute('data-prev-height', win.getBoundingClientRect().height + 'px')
+        
+        win.classList.add('maximized');
+        win.style.top = '0px';
+        win.style.left = '0px';
+        win.style.width = window.innerWidth + 'px';
+        win.style.height = (window.innerHeight - 40) + 'px';
     }
-
-    if(newY > bottomLimit) newY = bottomLimit;
-
-    draggedWindow.style.left = newX + 'px';
-    draggedWindow.style.top = newY + 'px';
-});
-
-document.addEventListener('mouseup', () => {
-
-    if (isDragging && draggedWindow && draggedWindow.classList.contains('desktop-icon')){
-        localStorage.setItem(draggedWindow.id + '-x', draggedWindow.style.left);
-        localStorage.setItem(draggedWindow.id + '-y', draggedWindow.style.top);
-    }
-
-    isDragging = false;
-    draggedWindow = null;
-});
+}
 
 
 
 
 function registerApp(winId, taskbarId, menuId, minId, maxId, closeId){
+    // THE FIX: The variables MUST live inside this function!
     const win = document.getElementById(winId);
     const taskbarBtn = document.getElementById(taskbarId);
     const menuBtn = document.getElementById(menuId);
@@ -134,7 +135,7 @@ function registerApp(winId, taskbarId, menuId, minId, maxId, closeId){
     });
 
     if (maxBtn) maxBtn.addEventListener('click', () => {
-        win.classList.toggle('maximized');
+        toggleMaximize(win);
     });
 
     if (minBtn) minBtn.addEventListener('click', () => {
@@ -277,6 +278,15 @@ customUrlInput.addEventListener('input', (e) => {
     if (wallpaperSelect.value === 'custom'){
         setWallpaper(e.target.value);
     }
+});
+
+let defaultSaveFolder = localStorage.getItem('default-save-path') || 'Root/Documents';
+let openedNotepadFilePath = null;
+
+document.getElementById('default-save-select').value = defaultSaveFolder;
+document.getElementById('default-save-select').addEventListener('change', (e) => {
+    defaultSaveFolder = e.target.value;
+    localStorage.setItem('default-save-path', defaultSaveFolder);
 });
 
 
@@ -474,9 +484,26 @@ function showStatus(message, color = 'green'){
 
 if (npSaveBtn){
     npSaveBtn.addEventListener('click', () => {
-        const fileName = npFileName.value.trim() || 'Untitled.txt';
+        const fileName = sanitizeFileName(npFileName.value);
+        let newKey;
+        
+        if (openedNotepadFilePath){
+            const lastSlash = openedNotepadFilePath.lastIndexOf('/');
+            const folderPath = lastSlash !== -1 ? openedNotepadFilePath.substring(0, lastSlash) : 'Root';
 
-        const newKey = 'webos-file-' + currentDirectory + '/' + fileName;
+            newKey = 'webos-file-' + folderPath + '/' + fileName;
+
+            const oldFileName = openedNotepadFilePath.substring(lastSlash + 1);
+            if (fileName !== oldFileName){
+                localStorage.removeItem('webos-file-' + openedNotepadFilePath);
+            }
+
+            openedNotepadFilePath = folderPath + '/' + fileName;
+        }
+        else {
+            newKey = 'webos-file-' + defaultSaveFolder + '/' + fileName;
+            openedNotepadFilePath = defaultSaveFolder + '/' + fileName;
+        }
 
         localStorage.setItem(newKey, notepadTextarea.value);
         showStatus('Saved!', 'green');
@@ -534,6 +561,11 @@ let currentDirectory = 'Root';
 const sidebarItems = document.querySelectorAll('.sidebar-item');
 const breadcrumbs = document.getElementById('exp-breadcrumbs');
 
+function sanitizeFileName(name){
+    if(!name) return 'Untitled.txt';
+    return name.replace(/[\\/:*?"<>]/g, '').trim() || 'Untitled.txt';
+}
+
 sidebarItems.forEach(item => {
     item.addEventListener('click', () => {
         sidebarItems.forEach(i => i.classList.remove('active'));
@@ -544,6 +576,27 @@ sidebarItems.forEach(item => {
     })
 })
 
+
+document.getElementById('exp-up-btn').addEventListener('click', () => {
+    if (currentDirectory === 'Root' || currentDirectory === 'Trash') return;
+
+    const lastSlashIndex = currentDirectory.lastIndexOf('/');
+
+    if (lastSlashIndex !== -1){
+        currentDirectory = currentDirectory.substring(0, lastSlashIndex);
+    } else {
+        currentDirectory = 'Root';
+    }
+
+    sidebarItems.forEach(i => i.classList.remove('active'));
+
+    if (currentDirectory === 'Root') {
+        sidebarItems[0].classList.add('active');
+    }
+
+    breadcrumbs.textContent = currentDirectory;
+    refreshFileExplorer();
+})
 document.addEventListener('click', () => {
     if (fileContextMenu.style.display && fileContextMenu.style.display === 'block'){
         fileContextMenu.style.display = 'none';
@@ -620,6 +673,8 @@ function refreshFileExplorer(){
             document.getElementById('np-file-name').value = file.fileName;
             document.getElementById('notepad-textarea').value = localStorage.getItem(file.key);
 
+            openedNotepadFilePath = file.fullPath;
+
             const npWin = document.getElementById('notepad-window');
             highestZIndex++;
             npWin.style.zIndex = highestZIndex;
@@ -629,6 +684,18 @@ function refreshFileExplorer(){
             e.preventDefault();
             e.stopPropagation();
             targetFileForMenu = file.fullPath;
+            fileContextMenu.style.display = 'block';
+
+            const restoreBtn = document.getElementById('file-context-restore');
+            const renameBtn = document.getElementById('file-context-rename');
+
+            if (currentDirectory === 'Trash'){
+                restoreBtn.style.display = 'block';
+                renameBtn.style.display = 'none';
+            } else {
+                restoreBtn.style.display = 'none';
+                renameBtn.style.display = 'block';
+            }
             fileContextMenu.style.display = 'block';
             fileContextMenu.style.left = e.clientX + 'px';
             fileContextMenu.style.top = e.clientY + 'px';
@@ -666,7 +733,6 @@ document.getElementById('file-context-delete').addEventListener('click', () => {
 
 document.getElementById('file-context-rename').addEventListener('click', () => {
     if (targetFileForMenu) {
-
         const lastSlashIndex = targetFileForMenu.lastIndexOf('/');
         let path = 'Root';
         let oldName = targetFileForMenu;
@@ -676,20 +742,44 @@ document.getElementById('file-context-rename').addEventListener('click', () => {
             oldName = targetFileForMenu.substring(lastSlashIndex + 1);
         }
 
-        const newName = prompt(`Enter a new name for "${targetFileForMenu}":`, targetFileForMenu);
+        const newName = prompt(`Enter a new name for "${oldName}":`, oldName);
+        const sanitizedName = sanitizeFileName(newName);
 
-        if (newName && newName.trim() !== '' && newName !== targetFileForMenu){
+        // THE FIX: Cleaned up the duplicates and fixed the variable check
+        if(sanitizedName && sanitizedName !== oldName){
             const fileData = localStorage.getItem('webos-file-' + targetFileForMenu);
-
-            localStorage.setItem('webos-file-' + path + '/' + newName.trim(), fileData);
+            
+            localStorage.setItem('webos-file-' + path + '/' + sanitizedName, fileData);
             localStorage.removeItem('webos-file-' + targetFileForMenu);
 
             refreshFileExplorer();
         }
     }
+});
+
+
+
+
+document.getElementById('file-context-restore').addEventListener('click', () => {
+    if (targetFileForMenu && currentDirectory === 'Trash'){
+        const fileData = localStorage.getItem('webos-file-' + targetFileForMenu);
+        const fileName = targetFileForMenu.replace('Trash/', '');
+
+        localStorage.setItem('webos-file-Root/' + fileName, fileData);
+        localStorage.removeItem('webos-file-' + targetFileForMenu);
+
+        refreshFileExplorer();
+    }
 })
 
 
+
+
+document.getElementById('np-close-btn').addEventListener('click', () => {
+    document.getElementById('notepad-textarea').value = '';
+    document.getElementById('np-file-name').value = 'Untitled.txt';
+    openedNotepadFilePath = null;
+})
 
 
 function bootOS() {
