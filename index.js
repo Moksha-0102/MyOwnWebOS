@@ -751,3 +751,219 @@ document.addEventListener('mouseup', () => {
         selectionBox = null;
     }
 });
+
+
+
+/* Terminal Engine */
+
+registerApp('terminal-window', 'taskbar-terminal', 'menu-terminal', 'term-min-btn', 'term-max-btn', 'term-close-btn');
+
+const termInput = document.getElementById('term-input');
+const termOutput = document.getElementById('term-output');
+const termPrompt = document.getElementById('term-prompt')
+const termContent = document.getElementById('term-content');
+
+let termCurrentDir = 'Root'
+let termHistory = [];
+let historyIndex = -1;
+
+termContent.addEventListener('click', () => termInput.focus());
+
+function printLine(text, isHTML = false){
+    const line = document.createElement('div');
+    if (isHTML) line.innerHTML = text;
+    else line.textContent = text;
+    termOutput.appendChild(line);
+    termContent.scrollTop = termContent.scrollHeight;
+}
+
+function updatePrompt() {
+    termPrompt.textContent = `stardancer@webos:~/${termCurrentDir}$`;
+}
+
+function resolvePath(target) {
+
+    if (target !== '/' && target.endsWith('/')){
+        target = target.slice(0, -1);
+    }
+
+    if (target === '/' || target === 'Root'){
+        return 'Root';
+    }
+    if (target === '..'){
+        if (termCurrentDir === 'Root'){
+            return 'Root';
+        }
+        return termCurrentDir.substring(0, termCurrentDir.lastIndexOf('/'))
+    }
+    if (target.startsWith('Root/')){
+        return target
+    }
+    if (target.toLowerCase().startsWith('root/')){
+        return 'Root/' + target.substring(5);
+    }
+    return `${termCurrentDir}/${target}`;
+}
+
+termInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter'){
+        const inputStr = termInput.value.trim();
+        printLine(`${termPrompt.textContent} ${inputStr}`);
+        termInput.value = '';
+
+        if (inputStr){
+            termHistory.push(inputStr);
+            historyIndex = termHistory.length;
+            executeCommand(inputStr);
+        }
+    } else if (e.key === 'ArrowUp'){
+        e.preventDefault();
+        if (historyIndex > 0){
+            historyIndex --;
+            termInput.value = termHistory[historyIndex];
+        }
+    } else if (e.key === 'ArrowDown'){
+        e.preventDefault();
+        if (historyIndex < termHistory.length - 1){
+            historyIndex++;
+            termInput.value = termHistory[historyIndex];
+        } else {
+            historyIndex = termHistory.length;
+            termInput.value = '';
+        }
+    }
+});
+
+function executeCommand(input) {
+    const args = input.match(/(?:[^\s"]+|"[^"]*")+/g).map(arg => arg.replace(/^"|"$/g, ''));
+    const cmd = args[0].toLowerCase();
+
+    switch(cmd){
+        case 'help':
+            printLine("WebOS Bash V1.0");
+            printLine("Available commands:");
+            printLine("  help     - Show this message");
+            printLine("  pwd      - Print working directory");
+            printLine("  ls       - List directory contents");
+            printLine("  cd <dir> - Change directory");
+            printLine("  cat <f>  - Read file contents");
+            printLine("  touch <f>- Create an empty file");
+            printLine("  mkdir <f>- Create a directory");
+            printLine("  rm <f>   - Delete a file");
+            printLine("  echo <f> - Print text to screen");
+            printLine("  whoami   - print current user");
+            printLine("  date     - Print current system date");
+            printLine("  history  - Show commad history");
+            break;
+        
+        case 'clear':
+            termOutput.innerHTML = '';
+            break;
+        
+        case 'pwd':
+            printLine('/' + termCurrentDir);
+            break;
+
+        case 'whoami':
+            printLine('stardancer');
+            break;
+
+        case 'date':
+            printLine(new Date().toString);
+            break;
+
+        case 'history':
+            termHistory.forEach((h, i) => printLine(`  ${i + 1}  ${h}`));
+            break;
+
+        case 'echo':
+            printLine(args.slice(1).join(' '));
+            break;
+
+        case 'ls':
+            const contents = new Set();
+            for (let i = 0; i < localStorage.length; i++){
+                const key = localStorage.key(i);
+                if (key.startsWith(`webos-file-${termCurrentDir}/`)){
+                    const relative = key.replace(`webos-file-${termCurrentDir}/`, '');
+                    const nextSlash = relative.indexOf('/');
+                    if (nextSlash === -1) contents.add(relative);
+                    else contents.add(`<span style="color: #3b82f6; font-weight: bold;">${relative.substring(0, nextSlash)}/</span>`)
+                }
+            }
+
+            if(termCurrentDir === 'Root'){
+                contents.add('<span style="color: #3b82f6; font-weight: bold;">Documents/</span>');
+                contents.add('<span style="color: #3b82f6; font-weight: bold;">Pictures/</span>');
+            }
+            
+            if(contents.size > 0){
+                printLine(Array.from(contents).sort().join('  '), true);
+            }
+            break;
+
+        case 'cd':
+            if (!args[1]) {
+                termCurrentDir = 'Root';
+            } else {
+                const newDir = resolvePath(args[1]);
+                
+                const dirLower = newDir.toLowerCase();
+                if (dirLower === 'root') termCurrentDir = 'Root';
+                else if (dirLower === 'root/documents') termCurrentDir = 'Root/Documents';
+                else if (dirLower === 'root/pictures') termCurrentDir = 'Root/Pictures';
+                else if (dirLower === 'root/trash' || dirLower === 'trash') termCurrentDir = 'Trash'; // Hidden access to Trash!
+                else {
+                    let folderExists = false;
+                    for (let i = 0; i < localStorage.length; i++) {
+                        if (localStorage.key(i).startsWith(`webos-file-${newDir}/`)) {
+                            folderExists = true; 
+                            break;
+                        }
+                    }
+                    if (folderExists) termCurrentDir = newDir;
+                    else printLine(`bash: cd: ${args[1]}: No such file or directory`);
+                }
+            }
+            updatePrompt();
+            break;
+
+        case 'touch':
+            if (!args[1]) return printLine("touch: missing file operand. run 'help' for more details");
+            const touchPath = resolvePath(args[1]);
+            if (!localStorage.getItem(`webos-file-${touchPath}`)){
+                localStorage.setItem(`webos-file-${touchPath}`, '');
+                refreshFileExplorer()
+            }
+            break;
+        
+        case 'mkdir':
+            if (!args[1]) return printLine("mkdir: missing operand. run 'help' for more details");
+            const dirPath = resolvePath(args[1]);
+            localStorage.setItem(`webos-file-${dirPath}/.keep`, 'Directory placeholder');
+            refreshFileExplorer();
+            break;
+
+        case 'rm':
+            if (!args[1]) return printLine("rm: missing operand. run 'help' for more details");
+            const rmPath = resolvePath(args[1]);
+            if (localStorage.getItem(`webos-file-${rmPath}`)){
+                localStorage.removeItem(`webos-file-${rmPath}`);
+                refreshFileExplorer()
+            } else {
+                printLine(`rm: cannot remove '${args[1]}': No such file`);
+            }
+            break;
+
+        case 'cat':
+            if (!args[1]) return printLine("cat: missing operand. run 'help' for more details");
+            const catPath = resolvePath(args[1]);
+            const fileData = localStorage.getItem(`webos-file-${catPath}`);
+            if (fileData !== null) printLine(fileData);
+            else printLine(`cat: ${args[1]}: No such file or directory`);
+            break;
+
+        default:
+            printLine(`bash: ${cmd}: command not found`);
+    }
+}

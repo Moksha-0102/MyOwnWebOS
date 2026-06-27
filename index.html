@@ -10,7 +10,6 @@
                 <div class="icon-emoji">📝</div>
                 <div class="icon-label">Notepad</div>
             </div>
-
             <div class="desktop-icon" id="desktop-calculator" style="top: 110px; left: 20px;" draggable="false">
                 <div class="icon-emoji">🧮</div>
                 <div class="icon-label">Calculator</div>
@@ -19,6 +18,10 @@
             <div class="desktop-icon" id="desktop-explorer" style="top: 200px; left: 20px;" draggable="false">
                 <div class="icon-emoji">📁</div>
                 <div class="icon-label">File Manager</div>
+            </div>
+            <div class="desktop-icon" id="desktop-terminal" style="top: 290px; left: 20px;" draggable="false">
+                <div class="icon-emoji">⌨️</div>
+                <div class="icon-label">Terminal</div>
             </div>
         </div>
 
@@ -38,6 +41,7 @@
             <div class="start-menu-item" id="menu-notepad">Notepad</div>
             <div class="start-menu-item" id="menu-calculator">Calculator</div>
             <div class="start-menu-item" id="menu-explorer">File Manager</div>
+            <div class="start-menu-item" id="menu-explorer">Terminal</div>
             <div class="start-menu-divider"></div>
             <div class="start-menu-item" id="menu-settings">Settings</div>
         </div>
@@ -230,8 +234,23 @@
             </div>
         </div>
 
-
-
+        <div class="window" id="terminal-window" style="display: none; top: 120px; left: 150px; width: 650px; height: 450px; background-color: #1e1e1e !important;">
+            <div class="title-bar">
+                <div class="window-title">stardance@webos: ~</div>
+                <div class="window-controls">
+                    <button id="term-min-btn">_</button>
+                    <button id="term-max-btn">☐</button>
+                    <button id="term-close-btn">x</button>
+                </div>
+            </div>
+            <div class="window-content terminal-content" id="term-content" style="padding: 10px; background: #000 !important; overflow-y: auto; flex-grow: 1;">
+                <div id="term-output"></div>
+                <div class="term-input-line">
+                    <span id="term-prompt" class="term-prompt">stardancer@webos:~/Root$</span>
+                    <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
+                </div>
+            </div>
+        </div> 
 
         <div class="taskbar">
             <div class="taskbar-left">
@@ -239,6 +258,7 @@
                 <div class="taskbar-app" id="taskbar-notepad" style="display:none;">Notepad</div>
                 <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div>
                 <div class="taskbar-app" id="taskbar-explorer" style="display: none;">File Manager</div> 
+                <div class="taskbar-app" id="taskbar-terminal" style="display: none;">Terminal</div>
                 <div class="taskbar-app" id="taskbar-settings" style="display: none;">Settings</div>
             </div>
             <div class="clock"></div>
