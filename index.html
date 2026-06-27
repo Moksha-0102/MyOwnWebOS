@@ -34,7 +34,7 @@
             <div class="context-item" id="file-context-delete" style="color: darkred;">Delete</div>
         </div>
         
-        <div class="start-menu" id="start-menu">
+        <div class="start-menu" id="start-menu" style="display: none;">
             <div class="start-menu-item" id="menu-notepad">Notepad</div>
             <div class="start-menu-item" id="menu-calculator">Calculator</div>
             <div class="start-menu-item" id="menu-explorer">File Manager</div>
@@ -67,7 +67,7 @@
 
 
 
-        <div class="window" id="explorer-window" style="display: none; top: 120px; left: 100px; width: 450px; height: 300px;">
+        <div class="window" id="explorer-window" style="display: none; top: 120px; left: 100px; width: 800px; height: 500px;">
             <div class="title-bar">
                 <div class="window-title">File Explorer</div>
                 <div class="window-controls">
@@ -79,8 +79,8 @@
 
             <div class="explorer-toolbar">
                 <div class="explorer-nav-btns">
-                    <button id="exp-back-btn" disabled>←</button>
-                    <button id="exp-fwd-btn" disabled>→</button>
+                    <button id="exp-view-btn">View</button>
+                    <button id="exp-empty-bin-btn" style="display: none; color: #ff5f56;">🗑️ Empty</button>
                     <button id="exp-up-btn">↑</button>
                 </div>
                 <div class="explorer-address-bar" id="exp-breadcrumbs">Root</div>
@@ -104,7 +104,7 @@
 
 
 
-        <div class="window" id="calculator-window" style="display:none; top: 150px; left: 200px; width: 250px; height: 350px;">
+        <div class="window" id="calculator-window" style="display: none; top: 150px; left: 200px; width: 250px; height: 350px;">
             <div class="title-bar">
                 <div class="window-title">Calculator</div>
                 <div class="window-controls">
@@ -140,7 +140,8 @@
             </div>            
         </div>
 
-        <div class="window" id='settings-window' style="display: none; top: 100px; left: 300px; width: 320px; height: 400px;">
+        <div class="window" id='settings-window' style="display: none; top: 100px; left: 300px; width: 500px; height: 500px;">
+
             <div class="title-bar">
                 <div class="window-title">Settings</div>
                 <div class="window-controls">
@@ -150,54 +151,82 @@
                 </div>
             </div>
 
-            <div class="window-content" style="gap: 20px;">
+            <div class="window-content">
+                <div class="settings-card">
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title">System Theme</div>
+                            <div class="settings-desc">Switch between Modern and Classic</div>
+                        </div>
+                        <select id="theme-select" class="modern-select">
+                            <option value="modern">Modern Dark</option>
+                            <option value="retro">Retro</option>
+                        </select>
+                    </div>
 
-                <div class="settings-group">
-                    <label>Clock Format:</label>
-                    <select id="time-format-select">
-                        <option value="12">12-Hour (AM/PM)</option>
-                        <option value="24">24-Hour (Military)</option>
-                    </select>
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title">Desktop Wallpaper</div>
+                            <div class="settings-desc">Choose your background</div>
+                        </div>
+                        <div class="settings-control-group">
+                            <select id="wallpaper-select" class="modern-select">
+                                <option value="default">Default Dark</option>
+                                <option value="custom">Custom URL...</option>
+                                <option value="nasa">NASA Picture of the Day</option>
+                            </select>
+                            <input type="text" id="custom-wallpaper-url" class="modern-imput" placeholder="Paste URL here..." style="display: none;">
+                            <p id="nasa-error" class="error-text" style="display: none;">NASA Image unavailable.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title">Desktop Labels</div>
+                            <div class="settings-desc">Show text under desktop icons</div>
+                        </div>
+                        <label class="modern-toggle">
+                            <input type="checkbox" id="icon-label-toggle" checked>
+                            <span class="modern-slider"></span>
+                        </label>
+                    </div>
                 </div>
 
-                <div class="settings-group">
-                    <label>Welcome Screen:</label>
-                    <select id="welcome-toggle-select">
-                        <option value="show">Show on boot</option>
-                        <option value="hide">Hide on boot</option>
-                    </select>
+                <div class="settings-card">
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title">24-hour Time</div>
+                            <div class="settings-desc">Use military time format</div>
+                        </div>
+                        <label class="modern-toggle">
+                            <input type="checkbox" id="time-format-toggle">
+                            <span class="modern-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title">Welcome Screen</div>
+                            <div class="settings-desc">Show the greeting on boot</div>
+                        </div>
+                        <label class="modern-toggle">
+                            <input type="checkbox" id="welcome-toggle-switch" checked>
+                            <span class="modern-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="settings-row">
+                        <div class="settings-text">
+                            <div class="settings-title"> Default Save Location</div>
+                            <div class="settings-desc">Where new text files are stored</div>
+                        </div>
+                        <select id="default-save-select" class="modern-select">
+                            <option value="Root/Documents">Documents</option>
+                            <option value="Root/Pictures">Pictures</option>
+                            <option value="Root">Root</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div class="settings-group">
-                    <label>Desktop Labels:</label>
-                    <select id="icon-label-select">
-                        <option value="show">Show Labels</option>
-                        <option value="hide">Hide Labels</option>
-                    </select>
-                </div>
-
-                <div class="settings-group">
-                    <label>Desktop Wallpaper</label>
-                    <select id="wallpaper-select">
-                        <option value="default">Default Blue</option>
-                        <option value="custom">Custom URL...</option>
-                        <option value="nasa">NASA Picture of the Day</option>
-                    </select>
-
-                    <input type="text" id="custom-wallpaper-url" placeholder="Paste image URL here..." style="display: none; margin-top: 8px;">
-
-                    <p id="nasa-error" style="color: red; font-size: 12px; display: none; margin-top: 8px; font-weight: bold;">NASA Image not available right now. Falling back to default.</p>
-                </div>
-
-                <div class="settings-group">
-                    <label>Default Save Location:</label>
-                    <select id="default-save-select">
-                        <option value="Root/Documents">Documents</option>
-                        <option value="Root/Pictures">Pictures</option>
-                        <option value="Root">Root</option>
-                    </select>
-                </div>
-                
             </div>
         </div>
 
@@ -218,26 +247,22 @@
 
         <div id="welcome-overlay" class="welcome-overlay" style="display: none;"></div>
         
-        <div class="window" id="welcome-window" style="display: none; top: 150px; left: 30%; width: 400px; z-index: 99999;">
-            <div class="title-bar">
-                <div class="window-title">Welcome to WebOS</div>
-                <div class="window-controls">
-                    <button id="welcome-close-btn">X</button>
-                </div>
+        <div class="welcome-modal" id="welcome-window" style="display: none;">
+            <button id="welcome-close-btn" class="welcome-close-btn">x</button>
+
+            <div class="welcome-hero">
+                <div class="welcome-orb">✨</div>
+                <h2>Welcome to WebOS</h2>
+                <p>Your premium, dark-themed workspace is ready. Drag icons, organize your files, and personalize your environment.</p>
             </div>
 
-            <div class="window-content" style="gap: 15px; text-align: center;">
-                <h2 style="margin: 0; padding-top: 10px;">Hello, World!</h2>
-                <p style="font-size: 14px; text-align: left; line-height: 1.4;">
-                    Welcome to my custom WebOS. Feel free to drag icons, open applications, and right-click the desktop to personalise your workspace.
-                </p>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-bottom: 5px;">
-                    <label style="font-size: 12px; cursor: pointer; user-select: none;">
-                        <input type="checkbox" id="welcome-dont-show"> Don't show this again
-                    </label>
-                    <button id="welcome-start-btn" style="padding: 5px 15px; font-weight: bold; cursor: pointer;">Let's Go!</button>
-                </div>
+            <div class="welcome-actions">
+                <label class="modern-checkbox-container">
+                    <input type="checkbox" id="welcome-dont-show">
+                    <span class="modern-checkmark"></span>
+                    Don't show this on startup
+                </label>
+                <button id="welcome-start-btn" class="welcome-btn">Enter Workspace</button>
             </div>
         </div> 
 
