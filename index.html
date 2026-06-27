@@ -80,7 +80,7 @@
             <div class="explorer-toolbar">
                 <div class="explorer-nav-btns">
                     <button id="exp-view-btn">View</button>
-                    <button id="exp-empty-bin-btn" style="display: none; color: #ff5f56;">🗑️ Empty</button>
+                    <button id="exp-empty-bin-btn" style="display: none; color: #ff5f56;">Empty Bin</button>
                     <button id="exp-up-btn">↑</button>
                 </div>
                 <div class="explorer-address-bar" id="exp-breadcrumbs">Root</div>
@@ -89,10 +89,10 @@
 
             <div class="explorer-body">
                 <div class="explorer-sidebar">
-                    <div class="sidebar-item active" data-path="Root">🏠 Root</div>
-                    <div class="sidebar-item" data-path="Root/Documents">📄 Documents</div>
-                    <div class="sidebar-item" data-path="Root/Pictures">🖼️ Pictures</div>
-                    <div class="sidebar-item" data-path="Trash">🗑️ Recycle Bin</div>
+                    <div class="sidebar-item active" data-path="Root">Root</div>
+                    <div class="sidebar-item" data-path="Root/Documents">Documents</div>
+                    <div class="sidebar-item" data-path="Root/Pictures">Pictures</div>
+                    <div class="sidebar-item" data-path="Trash">Recycle Bin</div>
                 </div>
 
                 <div class="window-content" style="padding: 10px; background-color: #fff; overflow-y: auto; flex-grow: 1;">
@@ -248,24 +248,27 @@
         <div id="welcome-overlay" class="welcome-overlay" style="display: none;"></div>
         
         <div class="welcome-modal" id="welcome-window" style="display: none;">
-            <button id="welcome-close-btn" class="welcome-close-btn">x</button>
-
-            <div class="welcome-hero">
-                <div class="welcome-orb">✨</div>
-                <h2>Welcome to WebOS</h2>
-                <p>Your premium, dark-themed workspace is ready. Drag icons, organize your files, and personalize your environment.</p>
+            <div class="welcome-sidebar">
+                <div class="sidebar-title">WebOS 2.0</div>
             </div>
+            
+            <div class="welcome-main">
+                <button id="welcome-close-btn" class="welcome-close-btn">x</button>
+                <div class="welcome-hero">
+                    <h2>Welcome to WebOS</h2>
+                    <p>Your premium workspace is ready. Drag icons, organize your files, and personalize your environment.</p>
+                </div>
 
-            <div class="welcome-actions">
-                <label class="modern-checkbox-container">
-                    <input type="checkbox" id="welcome-dont-show">
-                    <span class="modern-checkmark"></span>
-                    Don't show this on startup
-                </label>
-                <button id="welcome-start-btn" class="welcome-btn">Enter Workspace</button>
+                <div class="welcome-actions">
+                    <label class="modern-checkbox-container">
+                        <input type="checkbox" id="welcome-dont-show">
+                        <span class="modern-checkmark"></span>
+                        Don't show this on startup
+                    </label>
+                    <button id="welcome-start-btn" class="welcome-btn">Enter Workspace</button>
+                </div>
             </div>
-        </div> 
-
+        </div>
         <script src="index.js"></script>
     </body>
 </html>

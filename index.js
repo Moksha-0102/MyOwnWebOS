@@ -126,10 +126,10 @@ function toggleMaximize(win) {
         win.setAttribute('data-prev-height', win.getBoundingClientRect().height + 'px');
         
         win.classList.add('maximized');
-        win.style.top = '0px';
-        win.style.left = '0px';
-        win.style.width = window.innerWidth + 'px';
-        win.style.height = (window.innerHeight - 70) + 'px';
+        win.style.top = '';
+        win.style.left = '';
+        win.style.width = '';
+        win.style.height = '';
     }
 }
 
@@ -248,14 +248,34 @@ document.getElementById('context-settings').addEventListener('click', () => {
 
 
 /*Settings*/
-document.getElementById('time-format-toggle').addEventListener('change', (e) => {
+
+const timeToggle = document.getElementById('time-format-toggle');
+const savedTimeFormat = localStorage.getItem('use24HourTime');
+
+if (savedTimeFormat !== null){
+    use24HourTime = savedTimeFormat === 'true';
+    timeToggle.checked = use24HourTime;
+}
+timeToggle.addEventListener('change', (e) => {
     use24HourTime = e.target.checked;
+    localStorage.setItem('use24HourTime', use24HourTime);
     updateClock();
 });
 
-document.getElementById('icon-label-toggle').addEventListener('change', (e) => {
+
+const labelToggle = document.getElementById('icon-label-toggle');
+const savedLabels = localStorage.getItem('showIconLabels');
+
+if (savedLabels !== null){
+    const showLabels = savedLabels === 'true';
+    labelToggle.checked = showLabels;
+    document.querySelector('.desktop-environment').classList.toggle('hide-labels', !showLabels);
+}
+labelToggle.addEventListener('change', (e) => {
+    localStorage.setItem('showIconLabels', e.target.checked);
     document.querySelector('.desktop-environment').classList.toggle('hide-labels', !e.target.checked);
 });
+
 
 const themeSelect = document.getElementById('theme-select');
 themeSelect.value = localStorage.getItem('os-theme') || 'modern';
@@ -325,23 +345,24 @@ wallpaperSelect.addEventListener('change', async (e) => {
         }
     }
 });
-
 customUrlInput.addEventListener('input', (e) => {
     if (wallpaperSelect.value === 'custom') setWallpaper(e.target.value);
 });
 
 
-/*Welcome Screen*/
+/*Welcome Screen */
 
 const welcomeOverlay = document.getElementById('welcome-overlay');
 const welcomeWindow = document.getElementById('welcome-window');
 const welcomeDontShow = document.getElementById('welcome-dont-show');
 const welcomeToggleSwitch = document.getElementById('welcome-toggle-switch');
 
-if (localStorage.getItem('showWelcomeScreen') === 'false') {
-    welcomeToggleSwitch.checked = false;
-} else {
-    welcomeToggleSwitch.checked = true;
+const shouldShowWelcome = localStorage.getItem('showWelcomeScreen') !== 'false';
+
+welcomeToggleSwitch.checked = shouldShowWelcome;
+welcomeDontShow.checked = !shouldShowWelcome;
+
+if (shouldShowWelcome) {
     welcomeOverlay.style.display = 'block';
     welcomeWindow.style.display = 'flex';
 }
@@ -349,7 +370,7 @@ if (localStorage.getItem('showWelcomeScreen') === 'false') {
 function closeWelcomeScreen() {
     if(welcomeDontShow.checked) {
         localStorage.setItem('showWelcomeScreen', 'false');
-        welcomeToggleSwitch.checked = false; 
+        welcomeToggleSwitch.checked = false; // Sync settings app
     }
     welcomeOverlay.style.display = 'none';
     welcomeWindow.style.display = 'none';
@@ -359,15 +380,18 @@ document.getElementById('welcome-start-btn').addEventListener('click', closeWelc
 document.getElementById('welcome-close-btn').addEventListener('click', closeWelcomeScreen);
 
 welcomeToggleSwitch.addEventListener('change', (e) => {
-    localStorage.setItem('showWelcomeScreen', e.target.checked ? 'true' : 'false');
-    welcomeDontShow.checked = !e.target.checked;
+    const show = e.target.checked;
+    localStorage.setItem('showWelcomeScreen', show ? 'true' : 'false');
+    welcomeDontShow.checked = !show; 
 });
+
 
 
 /*Calculator*/
 
 const calcDisplay = document.getElementById('calc-display');
 let currentInput = '', previousInput = '', operator = '';
+let fullExpression = '';
 
 document.querySelectorAll('.calc-btn').forEach(button => {
     button.addEventListener('click', (e) => {
@@ -388,21 +412,28 @@ document.querySelectorAll('.calc-btn').forEach(button => {
             if (operator === '*') result = n1 * n2;
             if (operator === '/') result = n1 / n2;
             
-            calcDisplay.value = currentInput = result.toString();
+            fullExpression = result.toString();
+            calcDisplay.value = fullExpression;
+            currentInput = result.toString();
             previousInput = operator = '';
             return;
         }
 
         if (['+', '-', '*', '/'].includes(value)) {
-            if (!currentInput) return;
-            operator = value;
-            previousInput = currentInput;
-            currentInput = '';
-            return;
+            if (!currentInput && !previousInput) return;
+            if (currentInput) {
+                operator = value;
+                previousInput = currentInput;
+                currentInput = '';
+                fullExpression = previousInput + ' ' + operator + ' ';
+                calcDisplay.value = fullExpression
+            }
+            return
         }
 
         currentInput += value;
-        calcDisplay.value = currentInput;
+        fullExpression = (previousInput ? previousInput + ' ' + operator + ' ' : ' ') + currentInput;
+        calcDisplay.value = fullExpression;
     });
 });
 
@@ -636,8 +667,14 @@ const originalRefresh = refreshFileExplorer;
 refreshFileExplorer = function (){
     originalRefresh();
     const emptyBinBtn = document.getElementById('exp-empty-bin-btn');
+    const upBtn = document.getElementById('exp-up-btn');
+
     if (emptyBinBtn){
         emptyBinBtn.style.display = currentDirectory === 'Trash' ? 'block' : 'none';
+    }
+    
+    if (upBtn) {
+        upBtn.style.display = (currentDirectory === 'Root' || currentDirectory === 'Trash') ? 'none' : 'block';
     }
 };
 
