@@ -360,6 +360,7 @@ input, textarea, select {
     padding: 20px !important; 
     flex: 1 1 0px !important; 
     overflow-y: auto !important; 
+    position: relative !important;
 }
 
 .file-grid { 
@@ -369,6 +370,7 @@ input, textarea, select {
     gap: 15px !important; 
     flex-shrink: 0 !important; 
     width: 100% !important; 
+    position: relative !important;
 }
 
 .file-item { 
