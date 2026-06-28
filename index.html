@@ -3,7 +3,11 @@
     <head>
         <link rel="stylesheet" href="index.css">
     </head>
-    <body>       
+    <body>  
+        
+        <div id="boot-screen">
+            <pre id="boot-text"></pre>
+        </div>
 
         <div class="desktop-environment">
             <div class="desktop-icon" id="desktop-notepad" style="top: 20px; left: 20px;" draggable="false">
@@ -159,12 +163,12 @@
                 <div class="settings-card">
                     <div class="settings-row">
                         <div class="settings-text">
-                            <div class="settings-title">System Theme</div>
-                            <div class="settings-desc">Switch between Modern and Classic</div>
+                            <div class="settings-title">System Era</div>
+                            <div class="settings-desc">Switching eras requires a system reboot.</div>
                         </div>
                         <select id="theme-select" class="modern-select">
-                            <option value="modern">Modern Dark</option>
-                            <option value="retro">Retro</option>
+                            <option value="modern">Modern (UEFI)</option>
+                            <option value="retro">Legacy 1995 (BIOS)</option>
                         </select>
                     </div>
 
