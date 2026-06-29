@@ -1,3 +1,53 @@
+/*Custom Dialog engine*/
+
+const osDialogOverlay = document.getElementById('os-dialog-overlay');
+const osDialogTitle = document.getElementById('os-dialog-title');
+const osDialogMessage = document.getElementById('os-dialog-message');
+const osDialogInput = document.getElementById('os-dialog-input');
+const btnOk = document.getElementById('os-dialog-btn-ok');
+const btnCancel = document.getElementById('os-dialog-btn-cancel');
+const btnClose = document.getElementById('os-dialog-close-btn');
+
+function showOsDialog({type, message, title = "System", defaultValue = ""}){
+    return new Promise((resolve) => {
+        osDialogTitle.textContent = title;
+        osDialogMessage.textContent = message;
+        osDialogOverlay.style.display = 'flex';
+        osDialogInput.style.display = type == 'prompt' ? 'block' : 'none';
+        btnCancel.style.display = (type === 'confirm' || type === 'prompt') ? 'block' : 'none';
+        osDialogInput.value = defaultValue;
+
+        if (type === 'prompt') osDialogInput.focus();
+        else btnOk.focus();
+
+        const cleanup = (result) => {
+            osDialogOverlay.style.display = 'none';
+            btnOk.onclick = null;
+            btnCancel.onclick = null;
+            btnClose.onclick = null;
+            osDialogInput.onkeydown = null;
+            resolve(result);
+        };
+
+        btnOk.onclick = () => cleanup(type === 'prompt' ? osDialogInput.value : true);
+        btnCancel.onclick = () => cleanup(type === 'prompt' ? null : false);
+        btnClose.onclick = () => cleanup(type === 'prompt' ? null : false);
+
+        osDialogInput.onkeydown = (e) => {
+            if (e.key === 'Enter') cleanup(osDialogInput.value);
+            if (e.key === 'Escape') cleanup(null);
+        };
+    });
+}
+
+const osAlert = (message, title) => showOsDialog({type: 'alert', message, title});
+const osConfirm = (message, title) => showOsDialog({type: 'confirm', message, title});
+const osPrompt = (message, defaultValue, title) => showOsDialog({type: 'prompt', message, title, defaultValue});
+
+
+
+
+
 /*Clock*/
 let use24HourTime = false;
 let highestZIndex = 10;
@@ -55,6 +105,8 @@ document.addEventListener('mousedown', (e) => {
         offsetY = e.clientY - draggedWindow.offsetTop;
     }
     else if (desktopIcon) {
+        if (desktopIcon.classList.contains('custom-desktop-icon')) return; 
+
         e.preventDefault();
         isDragging = true;
         draggedWindow = desktopIcon;
@@ -281,8 +333,8 @@ const themeSelect = document.getElementById('theme-select');
 themeSelect.value = localStorage.getItem('os-theme') || 'modern';
 document.body.classList.toggle('theme-retro', themeSelect.value === 'retro');
 
-themeSelect.addEventListener('change', (e) => {
-    if (confirm("Changing the System Era requires a full system reboot. Restart the system now?")){
+themeSelect.addEventListener('change', async (e) => {
+    if (await osConfirm("Changing the System Era requires a full system reboot. Restart the system now?", "System Settings")){
         localStorage.setItem('os-theme', e.target.value);
         document.body.style.display = 'none';
         setTimeout(() => location.reload(), 200);
@@ -290,6 +342,41 @@ themeSelect.addEventListener('change', (e) => {
         e.target.value = localStorage.getItem('os-theme') || 'modern';
     }
 });
+
+
+const setUsername = document.getElementById('set-username-input');
+const setHostname = document.getElementById('set-hostname-input');
+const setPassword = document.getElementById('set-password-input');
+
+document.getElementById('menu-settings').addEventListener('click', () => {
+    setUsername.value = localStorage.getItem('os-username') || '';
+    setHostname.value = localStorage.getItem('os-hostname') || '';
+    setPassword.value = '';
+});
+
+document.getElementById('btn-save-identity').addEventListener('click', async () => {
+    if (await osConfirm("Applying new system identity requires a reboot. Proceed?", "System Settings")){
+        if (setUsername.value.trim()) localStorage.setItem('os-username', setUsername.value.trim().toLowerCase());
+        if (setHostname.value.trim()) localStorage.setItem('os-hostname', setHostname.value.trim().toLowerCase());
+        if (setPassword.value) localStorage.setItem('os-password', setPassword.value);
+
+        document.body.style.display = 'none';
+        setTimeout(() => location.reload(), 200);
+    }
+});
+
+document.getElementById('btn-shutdown').addEventListener('click', () => {
+    document.querySelectorAll('.window').forEach(w => w.style.display = 'none');
+    document.querySelector('.taskbar').style.display = 'none';
+    document.querySelector('.desktop-environment').style.display = 'none';
+
+    const shutScreen = document.getElementById('shutdown-screen');
+    shutScreen.style.display = 'flex';
+})
+
+
+
+
 
 const wallpaperSelect = document.getElementById('wallpaper-select');
 const customUrlInput = document.getElementById('custom-wallpaper-url');
@@ -837,12 +924,12 @@ document.getElementById('np-save-btn').addEventListener('click', () => {
     refreshFileExplorer();
 });
 
-document.getElementById('np-clear-btn').addEventListener('click', () => {
+document.getElementById('np-clear-btn').addEventListener('click', async () => {
     const fileName = npFileName.value.trim() || 'Untitled.txt';
     const currentKey = 'webos-file-' + (openedNotepadFilePath || defaultSaveFolder + '/' + fileName);
     
     if (localStorage.getItem(currentKey)) {
-        if (confirm(`Move "${fileName}" to Recycle Bin?`)) {
+        if (await osConfirm(`Move "${fileName}" to Recycle Bin?`, "Notepad")) {
             localStorage.setItem('webos-file-Trash/' + fileName, localStorage.getItem(currentKey));
             localStorage.removeItem(currentKey);
             notepadTextarea.value = '';
@@ -860,11 +947,44 @@ document.getElementById('np-close-btn').addEventListener('click', () => {
 
 
 /*File Manager*/
+
 let currentDirectory = 'Root';
 let targetFileForMenu = null;
+let clipboard = { action: '', paths: [] };
 const breadcrumbs = document.getElementById('exp-breadcrumbs');
 const fileListContainer = document.getElementById('file-list-container');
 const sidebarItems = document.querySelectorAll('.sidebar-item');
+const folderContextMenu = document.getElementById('folder-context-menu');
+const expContent = document.querySelector('#explorer-window .window-content');
+
+function initFileSystem() {
+    if (!localStorage.getItem('webos-file-Root/Documents/.keep')) localStorage.setItem('webos-file-Root/Documents/.keep', 'DIR');
+    if (!localStorage.getItem('webos-file-Root/Desktop/.keep')) localStorage.setItem('webos-file-Root/Desktop/.keep', 'DIR');
+}
+
+function getUniqueName(directory, baseName) {
+    let newName = baseName;
+    let counter = 1;
+    let ext = "";
+    let namePart = baseName;
+
+    if (baseName.includes('.') && !baseName.startsWith('.')) {
+        ext = baseName.substring(baseName.lastIndexOf('.'));
+        namePart = baseName.substring(0, baseName.lastIndexOf('.'));
+    }
+
+    while (true) {
+        let exists = false;
+        let testPath = `webos-file-${directory}/${newName}`;
+        for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key === testPath || key.startsWith(testPath + '/')) { exists = true; break; }
+        }
+        if (!exists) return newName;
+        newName = `${namePart} (${counter})${ext}`;
+        counter++;
+    }
+}
 
 document.getElementById('menu-explorer').addEventListener('click', refreshFileExplorer);
 
@@ -874,7 +994,28 @@ sidebarItems.forEach(item => {
         item.classList.add('active');
         currentDirectory = item.getAttribute('data-path');
         breadcrumbs.textContent = currentDirectory;
+        document.querySelector('.explorer-search').value = '';
         refreshFileExplorer();
+    });
+
+    item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        item.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+        item.style.color = '#3b82f6';
+    });
+    
+    item.addEventListener('dragleave', () => {
+        item.style.backgroundColor = '';
+        item.style.color = '';
+    });
+    
+    item.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        item.style.backgroundColor = '';
+        item.style.color = '';
+        const targetDir = item.getAttribute('data-path');
+        
+        await handleNativeDrop(targetDir); 
     });
 });
 
@@ -883,217 +1024,634 @@ document.getElementById('exp-up-btn').addEventListener('click', () => {
     currentDirectory = currentDirectory.substring(0, currentDirectory.lastIndexOf('/')) || 'Root';
     sidebarItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-path') === currentDirectory));
     breadcrumbs.textContent = currentDirectory;
+    document.querySelector('.explorer-search').value = '';
     refreshFileExplorer();
+});
+
+function refreshDesktopIcons() {
+    document.querySelectorAll('.custom-desktop-icon').forEach(icon => icon.remove());
+    const desktopEnv = document.querySelector('.desktop-environment');
+
+    const folders = new Set(), files = [];
+    
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('webos-file-Root/Desktop/')) {
+            const relative = key.replace('webos-file-Root/Desktop/', '');
+            const nextSlash = relative.indexOf('/');
+            if (nextSlash === -1) {
+                if (relative !== '.keep') files.push({ fileName: relative, fullPath: `Root/Desktop/${relative}`, key });
+            } else {
+                folders.add(relative.substring(0, nextSlash));
+            }
+        }
+    }
+
+    const createDesktopIcon = (name, type, path) => {
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'desktop-icon custom-desktop-icon';
+        iconDiv.dataset.path = path;
+        iconDiv.dataset.type = type;
+        iconDiv.draggable = true;
+
+        const safeId = 'desktop-custom-' + name.replace(/[^a-zA-Z0-9]/g, '');
+        iconDiv.id = safeId;
+
+        const savedX = localStorage.getItem(safeId + '-x');
+        const savedY = localStorage.getItem(safeId + '-y');
+        if (savedX) iconDiv.style.left = savedX;
+        if (savedY) iconDiv.style.top = savedY;
+        else { iconDiv.style.left = '20px'; iconDiv.style.top = '400px'; }
+
+        const emoji = type === 'folder' ? '📁' : '📄';
+        iconDiv.innerHTML = `<div class='icon-emoji'>${emoji}</div><div class='icon-label'>${name}</div>`;
+
+        iconDiv.addEventListener('dblclick', () => {
+            if (type === 'folder') {
+                document.getElementById('menu-explorer').click();
+                currentDirectory = path;
+                document.getElementById('exp-breadcrumbs').textContent = currentDirectory;
+                refreshFileExplorer();
+            } else {
+                document.getElementById('menu-notepad').click();
+                document.getElementById('np-file-name').value = name;
+                document.getElementById('notepad-textarea').value = localStorage.getItem(`webos-file-${path}`);
+                openedNotepadFilePath = path;
+            }
+        });
+
+        iconDiv.addEventListener('dragstart', handleNativeDragStart);
+        iconDiv.addEventListener('click', handleFileSelect);
+        
+        if (type === 'folder') {
+            iconDiv.addEventListener('dragover', (e) => { e.preventDefault(); iconDiv.style.filter = 'brightness(1.5)'; });
+            iconDiv.addEventListener('dragleave', () => { iconDiv.style.filter = ''; });
+            iconDiv.addEventListener('drop', async (e) => {
+                e.preventDefault(); e.stopPropagation();
+                iconDiv.style.filter = '';
+                await handleNativeDrop(path);
+            });
+        }
+
+        desktopEnv.appendChild(iconDiv);
+    };
+
+    folders.forEach(folderName => createDesktopIcon(folderName, 'folder', `Root/Desktop/${folderName}`));
+    files.forEach(file => createDesktopIcon(file.fileName, 'file', file.fullPath));
+}
+
+const desktopEnv = document.querySelector('.desktop-environment');
+desktopEnv.addEventListener('dragover', (e) => e.preventDefault());
+desktopEnv.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    
+    if (e.target.closest('.desktop-icon') && !e.target.closest('.custom-desktop-icon[data-type="folder"]')) return;
+
+    if (nativeDragPaths.length > 0) {
+        let cascadeOffset = 0;
+        
+        for (let sourcePath of nativeDragPaths) {
+            const itemName = sourcePath.substring(sourcePath.lastIndexOf('/') + 1);
+            const safeId = 'desktop-custom-' + itemName.replace(/[^a-zA-Z0-9]/g, '');
+            const snappedX = Math.round((e.clientX - 40) / 90) * 90 + 20 + cascadeOffset;
+            const snappedY = Math.round((e.clientY - 40) / 90) * 90 + 20 + cascadeOffset;
+            localStorage.setItem(safeId + '-x', snappedX + 'px');
+            localStorage.setItem(safeId + '-y', snappedY + 'px');
+            const iconEl = document.getElementById(safeId);
+            if (iconEl && sourcePath.startsWith('Root/Desktop/') && sourcePath.lastIndexOf('/') === 12) {
+                iconEl.style.left = snappedX + 'px';
+                iconEl.style.top = snappedY + 'px';
+            }
+            cascadeOffset += 25;
+        }
+        
+        await handleNativeDrop('Root/Desktop');
+    }
 });
 
 function refreshFileExplorer() {
     fileListContainer.innerHTML = '';
     let hasContent = false;
     const folders = new Set(), files = [];
-
-    if (currentDirectory === 'Root') {
-        folders.add('Documents');
-        folders.add('Pictures');
-    }
-
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith('webos-file-')) {
-            const fullPath = key.replace('webos-file-', '');
-            if (fullPath.startsWith(currentDirectory + '/')) {
-                const relativePath = fullPath.replace(currentDirectory + '/', '');
-                const nextSlash = relativePath.indexOf('/');
-                if (nextSlash === -1) files.push({fullPath, fileName: relativePath, key});
-                else folders.add(relativePath.substring(0, nextSlash));
+        if (key.startsWith(`webos-file-${currentDirectory}/`)) {
+            const relativePath = key.replace(`webos-file-${currentDirectory}/`, '');
+            const nextSlash = relativePath.indexOf('/');
+            if (nextSlash === -1) {
+                if (relativePath !== '.keep') files.push({fullPath: `${currentDirectory}/${relativePath}`, fileName: relativePath, key});
+            } else {
+                folders.add(relativePath.substring(0, nextSlash));
             }
         }
     }
 
-    folders.forEach(folderName => {
+    const searchQuery = document.querySelector('.explorer-search').value.toLowerCase();
+
+    const getMeta = (pathKey) => {
+        const metaKey = 'os-meta' + pathKey;
+        let ts = localStorage.getItem(metaKey);
+        if (!ts) {
+            ts = Date.now();
+            localStorage.setItem(metaKey, ts);
+        }
+        return {
+            ts: parseInt(ts),
+            str: new Date(parseInt(ts)).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
+        };
+    };
+
+    let folderArr = Array.from(folders).map(f => {
+        const meta = getMeta(`webos-folder-${currentDirectory}/${f}`);
+        return { name: f, type: 'folder', ts: meta.ts, dateStr: meta.str };
+    });
+    
+    let fileArr = Array.from(files).map(f => {
+        const meta = getMeta(f.key);
+        return {
+            name: f.fileName,
+            fullPath: f.fullPath,
+            key: f.key,
+            type: f.fileName.endsWith('.app') ? 'app' : 'file',
+            ts: meta.ts,
+            dateStr: meta.str
+        };
+    });
+
+    const sortEngine = (a, b) => {
+        let valA, valB;
+        if (currentSort.column === 'name') { valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); }
+        else if (currentSort.column === 'date') { valA = a.ts; valB = b.ts; }
+        else if (currentSort.column === 'type') { valA = a.type; valB = b.type; }
+
+        if (valA < valB) return -1 * currentSort.direction;
+        if (valA > valB) return 1 * currentSort.direction;
+        return 0;
+    };
+
+    folderArr.sort(sortEngine);
+    fileArr.sort(sortEngine);
+
+    folderArr.forEach(folder => {
+        if (searchQuery && !folder.name.toLowerCase().includes(searchQuery)) return;
         hasContent = true;
         const div = document.createElement('div');
-        div.className = 'file-item';
-        div.innerHTML = `<div class='icon-emoji'>📁</div><div class='icon-label'>${folderName}</div>`;
+        div.className = 'file-item folder-item';
+        div.dataset.path = currentDirectory + '/' + folder.name;
+        div.dataset.type = 'folder';
+        div.draggable = true;
+        div.innerHTML = `
+            <div class='icon-emoji'>📁</div>
+            <div class='icon-label'>${folder.name}</div>
+            <div class='list-col'>${folder.dateStr}</div>
+            <div class='list-col'>File Folder</div>
+        `;
+        
         div.addEventListener('dblclick', () => {
-            currentDirectory += '/' + folderName;
+            currentDirectory += '/' + folder.name;
             breadcrumbs.textContent = currentDirectory;
             sidebarItems.forEach(i => i.classList.remove('active'));
+            document.querySelector('.explorer-search').value = '';
             refreshFileExplorer();
         });
+        
+        div.addEventListener('dragover', (e) => { e.preventDefault(); div.style.backgroundColor = 'rgba(59, 130, 246, 0.2)'; div.style.border = '1px dashed #3b82f6'; });
+        div.addEventListener('dragleave', () => { div.style.backgroundColor = ''; div.style.border = ''; });
+        div.addEventListener('drop', async (e) => {
+            e.preventDefault(); div.style.backgroundColor = ''; div.style.border = '';
+            await handleNativeDrop(div.dataset.path);
+        });
+
+        div.addEventListener('dragstart', handleNativeDragStart);
+        div.addEventListener('contextmenu', handleFileContext);
+        div.addEventListener('click', handleFileSelect);
         fileListContainer.appendChild(div);
     });
 
-    files.forEach(file => {
+    fileArr.forEach(file => {
+        if (searchQuery && !file.name.toLowerCase().includes(searchQuery)) return;
         hasContent = true;
         const div = document.createElement('div');
         div.className = 'file-item';
         div.dataset.path = file.fullPath;
-        div.innerHTML = `<div class='icon-emoji'>📄</div><div class='icon-label'>${file.fileName}</div>`;
+        div.dataset.type = 'file';
+        div.draggable = true;
+        div.innerHTML = `
+            <div class='icon-emoji'>📄</div>
+            <div class='icon-label'>${file.name}</div>
+            <div class='list-col'>${file.dateStr}</div>
+            <div class='list-col'>${file.type === 'app' ? 'Application' : 'Text Document'}</div>
+        `;
         
         div.addEventListener('dblclick', () => {
             document.getElementById('menu-notepad').click();
-            npFileName.value = file.fileName;
-            notepadTextarea.value = localStorage.getItem(file.key);
+            document.getElementById('np-file-name').value = file.name;
+            document.getElementById('notepad-textarea').value = localStorage.getItem(file.key);
             openedNotepadFilePath = file.fullPath;
         });
 
-        div.addEventListener('contextmenu', (e) => {
-            e.preventDefault(); e.stopPropagation();
-
-            if (!div.classList.contains('selected')){
-                document.querySelectorAll('.file-item.selected').forEach(f => f.classList.remove('selected'));
-                div.classList.add('selected');
-            }
-
-            targetFileForMenu = file.fullPath;
-            fileContextMenu.style.display = 'block';
-            fileContextMenu.style.left = e.clientX + 'px';
-            fileContextMenu.style.top = e.clientY + 'px';
-            
-            document.getElementById('file-context-restore').style.display = currentDirectory === 'Trash' ? 'block' : 'none';
-            const selectedCount = document.querySelectorAll('.file-item.selected').length;
-            document.getElementById('file-context-rename').style.display = (currentDirectory === 'Trash' || selectedCount > 1) ? 'none' : 'block';
-        });
-
-        div.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (!e.ctrlKey && !e.metaKey){
-                document.querySelectorAll('.file-item.selected').forEach(f = f.classList.remove('selected'));
-            }
-            div.classList.add('selected');
-        });
-        
+        div.addEventListener('dragstart', handleNativeDragStart);
+        div.addEventListener('contextmenu', handleFileContext);
+        div.addEventListener('click', handleFileSelect);
         fileListContainer.appendChild(div);
     });
+
+    if (currentDirectory === 'Root/Desktop' && !searchQuery){
+        const systemApps = [
+            { name: 'Notepad.app', icon:'📝', id: 'menu-notepad', type: 'app' },
+            { name: 'Calculator.app', icon: '🖩', id: 'menu-calculator', type: 'app'},
+            { name: 'Explorer.app', icon: '📁', id: 'menu-explorer', type: 'app'},
+            { name: 'Settings.app', icon: '⚙️', id: 'menu-settings', type: 'app'}
+        ];
+
+        systemApps.sort(sortEngine);
+
+        systemApps.forEach(app => {
+            hasContent = true;
+            const div = document.createElement('div');
+            div.className = 'file-item system-app';
+            div.dataset.path = `Root/Desktop/${app.name}`;
+            div.innerHTML = `
+                <div class='icon-emoji'>${app.icon}</div>
+                <div class='icon-label'>${app.name}</div>
+                <div class='list-col'>--</div>
+                <div class='list-col'>Application</div>
+                <div class='list-col'>--</div>
+            `;
+            div.addEventListener('dblclick', () => { document.getElementById(app.id).click(); });
+            div.addEventListener('contextmenu', handleFileContext);
+            div.addEventListener('click', handleFileSelect);
+            fileListContainer.appendChild(div);
+        });
+    }
 
     if (!hasContent) {
         fileListContainer.innerHTML = '<p style="color: #888; font-size: 13px; width: 100%; text-align: center; grid-column: 1/-1;">This folder is empty.</p>';
     }
+    
+    refreshDesktopIcons(); 
+    
+    const emptyBinBtn = document.getElementById('exp-empty-bin-btn');
+    const upBtn = document.getElementById('exp-up-btn');
+    if (emptyBinBtn) emptyBinBtn.style.display = currentDirectory === 'Trash' ? 'block' : 'none';
+    if (upBtn) upBtn.style.display = (currentDirectory === 'Root' || currentDirectory === 'Trash') ? 'none' : 'block';
 }
 
-document.getElementById('file-context-delete').addEventListener('click', () => {
-    const selectedItems = document.querySelectorAll('.file-item.selected');
+document.querySelector('.explorer-search').addEventListener('input', refreshFileExplorer);
+
+function handleFileSelect(e) {
+    e.stopPropagation();
+    if (!e.ctrlKey && !e.metaKey){
+        document.querySelectorAll('.file-item.selected, .custom-desktop-icon.selected').forEach(f => f.classList.remove('selected'));
+    }
+    this.classList.add('selected');
+}
+
+function handleFileContext(e) {
+    e.preventDefault(); e.stopPropagation();
+    if (!this.classList.contains('selected')){
+        document.querySelectorAll('.file-item.selected').forEach(f => f.classList.remove('selected'));
+        this.classList.add('selected');
+    }
+
+    targetFileForMenu = this.dataset.path;
+    fileContextMenu.style.display = 'block';
+    folderContextMenu.style.display = 'none';
+    fileContextMenu.style.left = e.clientX + 'px';
+    fileContextMenu.style.top = e.clientY + 'px';
     
-    if (selectedItems.length === 0) return;
-    const isTrash = currentDirectory === 'Trash';
-    const msg = selectedItems > 1
-        ? (isTrash ? `Permanently delete ${selectedItems.length} items?` : `Move ${selectedItems.length} items to Recycle Bin?`)
-        : (isTrash ? `Permanently delete this item?` : `Move to Recycle Bin?`);
+    document.getElementById('file-context-restore').style.display = currentDirectory === 'Trash' ? 'block' : 'none';
+    const selectedCount = document.querySelectorAll('.file-item.selected').length;
+    document.getElementById('file-context-rename').style.display = (currentDirectory === 'Trash' || selectedCount > 1) ? 'none' : 'block';
+}
 
-    if (confirm(msg)){
-        selectedItems.forEach(item => {
-            const path = item.dataset.path;
-            if (!path) return;
+expContent.addEventListener('contextmenu', (e) => {
+    if (e.target.closest('.file-item') || currentDirectory === 'Trash') return; 
+    e.preventDefault();
+    fileContextMenu.style.display = 'none';
+    folderContextMenu.style.display = 'block';
+    folderContextMenu.style.left = e.clientX + 'px';
+    folderContextMenu.style.top = e.clientY + 'px';
+    
+    document.getElementById('folder-context-paste').style.opacity = clipboard.paths.length ? '1' : '0.5';
+    document.getElementById('folder-context-paste').style.pointerEvents = clipboard.paths.length ? 'auto' : 'none';
+});
 
-            const fileName = path.substring(path.lastIndexOf('/') + 1);
-            if (isTrash) {
-                localStorage.removeItem('webos-file-' + path);
-            } else {
-                localStorage.setItem('webos-file-Trash/' + fileName, localStorage.getItem('webos-file-' + path));
-                localStorage.removeItem('webos-file-' + path);
+document.addEventListener('click', () => { folderContextMenu.style.display = 'none'; fileContextMenu.style.display = 'none'; });
+
+let nativeDragPaths = [];
+
+function handleNativeDragStart(e) {
+    if (!this.classList.contains('selected')) {
+        document.querySelectorAll('.file-item.selected, .custom-desktop-icon.selected').forEach(f => f.classList.remove('selected'));
+        this.classList.add('selected');
+    }
+    
+    nativeDragPaths = Array.from(document.querySelectorAll('.file-item.selected, .custom-desktop-icon.selected'))
+        .map(el => el.dataset.path)
+        .filter(path => path);
+        
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', nativeDragPaths.join(',')); 
+}
+
+async function handleNativeDrop(targetDirectory) {
+    if (!nativeDragPaths.length) return;
+    
+    for (let sourcePath of nativeDragPaths) {
+        const itemName = sourcePath.substring(sourcePath.lastIndexOf('/') + 1);
+        if (targetDirectory.startsWith(sourcePath)) {
+            await osAlert("Cannot move a folder into itself.", "File System Error");
+            continue;
+        }
+        if (sourcePath === targetDirectory + '/' + itemName) continue;
+
+        const protectedPaths = ['Root/Documents', 'Root/Desktop'];
+
+        if (protectedPaths.includes(sourcePath) || sourcePath.endsWith('.app')){
+            await osAlert("Not Allowed: Core folders and applications cannot be moved to a different directory.", "System Security");
+            continue;
+        }
+
+        const safeName = getUniqueName(targetDirectory, itemName);
+        const targetPathBase = `${targetDirectory}/${safeName}`;
+
+        const keysToMove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === `webos-file-${sourcePath}` || key.startsWith(`webos-file-${sourcePath}/`)) {
+                keysToMove.push(key);
             }
+        }
+        
+        keysToMove.forEach(key => {
+            const relativeSuffix = key.replace(`webos-file-${sourcePath}`, '');
+            const newKey = `webos-file-${targetPathBase}${relativeSuffix}`;
+            localStorage.setItem(newKey, localStorage.getItem(key));
+            localStorage.removeItem(key); 
         });
-        refreshFileExplorer();
-        fileContextMenu.style.display = 'none'
+    }
+    nativeDragPaths = [];
+    refreshFileExplorer();
+}
+
+expContent.addEventListener('dragover', (e) => e.preventDefault());
+expContent.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    if (e.target.closest('.folder-item')) return;
+    await handleNativeDrop(currentDirectory);
+});
+
+document.getElementById('folder-context-new').addEventListener('click', async () => {
+    let folderName = await osPrompt("Enter folder name:", "New Folder", "Create Directory");
+    if (folderName) folderName = sanitizeFileName(folderName)
+    if (!folderName) return;
+    
+    folderName = getUniqueName(currentDirectory, folderName);
+    localStorage.setItem(`webos-file-${currentDirectory}/${folderName}/.keep`, 'DIR');
+    refreshFileExplorer();
+});
+
+document.getElementById('file-context-copy').addEventListener('click', async () => {
+    clipboard.action = 'copy';
+    
+    const selected = Array.from(document.querySelectorAll('.file-item.selected')).map(el => el.dataset.path);
+    const protectedPaths = ['Root/Documents', 'Root/Desktop'];
+    let hasProtected = false;
+    
+    clipboard.paths = selected.filter(path => {
+        if (path && (protectedPaths.includes(path) || path.endsWith('.app'))) {
+            hasProtected = true;
+            return false;
+        }
+        return path;
+    });
+
+    if (hasProtected) {
+        await osAlert("System Architecture Lock: Core folders and applications cannot be copied.", "System Security");
     }
 });
 
-document.getElementById('file-context-rename').addEventListener('click', () => {
+document.getElementById('folder-context-paste').addEventListener('click', async () => {
+    if (!clipboard.paths || !clipboard.paths.length || clipboard.action !== 'copy') return;
+    
+    for (let sourcePath of clipboard.paths) {
+        if (!sourcePath) continue;
+        const originalName = sourcePath.substring(sourcePath.lastIndexOf('/') + 1);
+        
+        if (currentDirectory.startsWith(sourcePath)) {
+            await osAlert("Cannot paste a folder into itself.", "System Error");
+            continue;
+        }
+
+        const safeName = getUniqueName(currentDirectory, originalName);
+        const targetPathBase = `${currentDirectory}/${safeName}`;
+
+        const keysToCopy = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === `webos-file-${sourcePath}` || key.startsWith(`webos-file-${sourcePath}/`)) {
+                keysToCopy.push(key);
+            }
+        }
+        
+        keysToCopy.forEach(key => {
+            const relativeSuffix = key.replace(`webos-file-${sourcePath}`, '');
+            const newKey = `webos-file-${targetPathBase}${relativeSuffix}`;
+            localStorage.setItem(newKey, localStorage.getItem(key));
+        });
+    }
+    refreshFileExplorer();
+});
+
+document.getElementById('file-context-rename').addEventListener('click', async () => {
     if (!targetFileForMenu) return;
+    const protectedPaths = ['Root/Documents', 'Root/Desktop'];
+    if (protectedPaths.includes(targetFileForMenu) || targetFileForMenu.endsWith('.app')){
+        await osAlert("Not Allowed: Core folders and applications cannot be renamed.", "System Security");
+        return;
+    }
+
     const lastSlash = targetFileForMenu.lastIndexOf('/');
     const path = lastSlash !== -1 ? targetFileForMenu.substring(0, lastSlash) : 'Root';
     const oldName = targetFileForMenu.substring(lastSlash + 1);
     
-    const newName = sanitizeFileName(prompt(`Rename "${oldName}":`, oldName));
-    if (newName && newName !== oldName) {
-        localStorage.setItem('webos-file-' + path + '/' + newName, localStorage.getItem('webos-file-' + targetFileForMenu));
-        localStorage.removeItem('webos-file-' + targetFileForMenu);
+    const baseNewName = sanitizeFileName(await osPrompt(`Rename "${oldName}":`, oldName, "Rename File"));
+    if (baseNewName && baseNewName !== oldName) {
+        const safeNewName = getUniqueName(path, baseNewName);
+        const keysToRename = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === `webos-file-${targetFileForMenu}` || key.startsWith(`webos-file-${targetFileForMenu}/`)) keysToRename.push(key);
+        }
+        keysToRename.forEach(key => {
+            const relativeSuffix = key.replace(`webos-file-${targetFileForMenu}`, '');
+            const newKey = `webos-file-${path}/${safeNewName}${relativeSuffix}`;
+            localStorage.setItem(newKey, localStorage.getItem(key));
+            localStorage.removeItem(key);
+        });
+        refreshFileExplorer();
+    }
+});
+
+document.getElementById('file-context-delete').addEventListener('click', async () => {
+    const selectedItems = document.querySelectorAll('.file-item.selected');
+    if (selectedItems.length === 0) return;
+
+    const protectedPaths = ['Root/Documents', 'Root/Desktop'];
+    let containsProtected = false;
+    selectedItems.forEach(item => {
+        if (protectedPaths.includes(item.dataset.path) || item.dataset.path.endsWith('.app')){
+            containsProtected = true;
+        }
+    });
+
+    if (containsProtected) {
+        await osAlert("Not Allowed: Core folders and applications cannot be deleted.", "System Security");
+        return;
+    }
+    
+    const isTrash = currentDirectory === 'Trash';
+    const msg = selectedItems.length > 1
+        ? (isTrash ? `Permanently delete ${selectedItems.length} items?` : `Move ${selectedItems.length} items to Recycle Bin?`)
+        : (isTrash ? `Permanently delete this item?` : `Move to Recycle Bin?`);
+
+    if (await osConfirm(msg, "Confirm Deletion")){
+        selectedItems.forEach(item => {
+            const sourcePath = item.dataset.path;
+            if (!sourcePath) return;
+
+            const originalName = sourcePath.substring(sourcePath.lastIndexOf('/') + 1);
+            const keysToDelete = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key === `webos-file-${sourcePath}` || key.startsWith(`webos-file-${sourcePath}/`)) keysToDelete.push(key);
+            }
+            
+            const safeTrashName = isTrash ? originalName : getUniqueName('Trash', originalName);
+
+            keysToDelete.forEach(key => {
+                if (isTrash) {
+                    localStorage.removeItem(key);
+                } else {
+                    const relativeSuffix = key.replace(`webos-file-${sourcePath}`, '');
+                    localStorage.setItem(`webos-file-Trash/${safeTrashName}${relativeSuffix}`, localStorage.getItem(key));
+                    localStorage.removeItem(key);
+                }
+            });
+        });
         refreshFileExplorer();
     }
 });
 
 document.getElementById('file-context-restore').addEventListener('click', () => {
     const selectedItems = document.querySelectorAll('.file-item.selected');
-
     if (selectedItems.length > 0 && currentDirectory === 'Trash'){
         selectedItems.forEach(item => {
-            const path = item.dataset.path;
-            if (!path) return;
-
-            const fileName = path.replace('Trash/', '');
-            localStorage.setItem('webos-file-Root/' + fileName, localStorage.getItem('webos-file-' + path));
-            localStorage.removeItem('webos-file-' + path);
+            const sourcePath = item.dataset.path;
+            const originalName = sourcePath.replace('Trash/', '');
+            const safeRestoreName = getUniqueName('Root', originalName);
+            
+            const keysToRestore = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key === `webos-file-${sourcePath}` || key.startsWith(`webos-file-${sourcePath}/`)) keysToRestore.push(key);
+            }
+            
+            keysToRestore.forEach(key => {
+                const relativeSuffix = key.replace(`webos-file-${sourcePath}`, '');
+                localStorage.setItem(`webos-file-Root/${safeRestoreName}${relativeSuffix}`, localStorage.getItem(key));
+                localStorage.removeItem(key);
+            });
         });
         refreshFileExplorer();
-        fileContextMenu.style.display = 'none';
     }
 });
 
-
-document.addEventListener('DOMContentLoaded', () => {
-    updateClock();
-    updatePrompt();
-    
-    const wallpOpt = localStorage.getItem('wallp-opt');
-    if (wallpOpt === 'custom') setWallpaper(localStorage.getItem('wallpaper-url'));
-    else if (wallpOpt === 'nasa') setWallpaper(localStorage.getItem('nasa-img'));
-    if (wallpaperSelect) wallpaperSelect.value = wallpOpt || 'default';
-
-    document.querySelectorAll('.desktop-icon').forEach(icon => {
-        const savedX = localStorage.getItem(icon.id + '-x');
-        const savedY = localStorage.getItem(icon.id + '-y');
-        if (savedX) icon.style.left = savedX;
-        if (savedY) icon.style.top = savedY;
-    });
-
-    refreshFileExplorer();
-});
-
-
-let isListView = false;
-document.getElementById('exp-view-btn').addEventListener('click', () => {
-    isListView = !isListView;
-    document.getElementById('file-list-container').classList.toggle('list-view', isListView);
-});
-
-const originalRefresh = refreshFileExplorer;
-refreshFileExplorer = function (){
-    originalRefresh();
-    const emptyBinBtn = document.getElementById('exp-empty-bin-btn');
-    const upBtn = document.getElementById('exp-up-btn');
-
-    if (emptyBinBtn){
-        emptyBinBtn.style.display = currentDirectory === 'Trash' ? 'block' : 'none';
-    }
-    
-    if (upBtn) {
-        upBtn.style.display = (currentDirectory === 'Root' || currentDirectory === 'Trash') ? 'none' : 'block';
-    }
-};
-
-document.getElementById('exp-empty-bin-btn').addEventListener('click', () => {
-    if(confirm('Permanently delete all items in Recycle Bin? This cannot be undone.')){
+document.getElementById('exp-empty-bin-btn').addEventListener('click', async () => {
+    if(await osConfirm('Permanently delete all items in Recycle Bin?', "System Settings")){
         const keysToDelete = [];
         for(let i = 0; i < localStorage.length; i++){
-            if (localStorage.key(i).startsWith('webos-file-Trash/')){
-                keysToDelete.push(localStorage.key(i));
-            }
+            if (localStorage.key(i).startsWith('webos-file-Trash/')) keysToDelete.push(localStorage.key(i));
         }
         keysToDelete.forEach(k => localStorage.removeItem(k));
         refreshFileExplorer();
     }
 });
 
+let isListView = false;
+let currentSort = { column: 'name', direction: 1 };
 
-const expContent = document.querySelector('#explorer-window .window-content');
+document.getElementById('exp-view-btn').addEventListener('click', () => {
+    isListView = !isListView;
+    document.getElementById('file-list-container').classList.toggle('list-view', isListView);
+    document.getElementById('list-headers').style.display = isListView ? 'grid' : 'none';
+});
+
+document.querySelectorAll('.sort-header').forEach(header => {
+    header.addEventListener('click', () => {
+        const col = header.dataset.sort;
+        if (currentSort.column === col) {
+            currentSort.direction *= -1;
+        } else {
+            currentSort.column = col;
+            currentSort.direction = 1;
+            document.querySelectorAll('.sort-header').forEach(h => h.style.color = '#888');
+            header.style.color = 'var(--text-color)';
+        }
+        document.querySelectorAll('.sort-arrow').forEach(a => a.textContent = '');
+        header.querySelector('.sort-arrow').textContent = currentSort.direction === 1 ? '▲' : '▼';
+        refreshFileExplorer();
+    });
+});
+
+const propWindow = document.getElementById('properties-window');
+document.getElementById('prop-close-btn').addEventListener('click', () => propWindow.style.display = 'none');
+
+function showProperties(path, type) {
+    if (!path) return;
+    const name = path.substring(path.lastIndexOf('/') + 1);
+    const location = path.substring(0, path.lastIndexOf('/'));
+    
+    document.getElementById('prop-name').value = name;
+    document.getElementById('prop-location').textContent = location || 'Root';
+    
+    if (type === 'folder') {
+        document.getElementById('prop-icon').textContent = '📁';
+        document.getElementById('prop-type').textContent = 'File Folder';
+        
+        let fileCount = 0;
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith(`webos-file-${path}/`) && !key.endsWith('.keep')) fileCount++;
+        }
+        document.getElementById('prop-contains').textContent = `${fileCount} Items`;
+    } else {
+        document.getElementById('prop-icon').textContent = '📄';
+        document.getElementById('prop-type').textContent = name.endsWith('.app') ? 'Application' : 'Text Document';
+        document.getElementById('prop-contains').textContent = '--';
+    }
+    
+    propWindow.style.display = 'block';
+    highestZIndex++;
+    propWindow.style.zIndex = highestZIndex;
+}
+
+document.getElementById('file-context-properties').addEventListener('click', () => {
+    const item = document.querySelector(`.file-item[data-path="${targetFileForMenu}"]`);
+    if (item) showProperties(targetFileForMenu, item.dataset.type);
+});
+
+document.getElementById('folder-context-properties').addEventListener('click', () => {
+    showProperties(currentDirectory, 'folder');
+});
+
 let selectionBox = null;
 let startX, startY;
 
 expContent.addEventListener('mousedown', (e) => {
     if (e.target.closest('.file-item') || e.button !== 0) return;
-
     const rect = expContent.getBoundingClientRect();
-
     if (e.clientX > rect.right - 18 && e.clientY > rect.bottom - 18) return;
 
     startX = e.clientX - rect.left + expContent.scrollLeft;
@@ -1106,7 +1664,6 @@ expContent.addEventListener('mousedown', (e) => {
     selectionBox.style.width = '0px';
     selectionBox.style.height = '0px';
     expContent.appendChild(selectionBox);
-
     document.querySelectorAll('.file-item.selected').forEach(f => f.classList.remove('selected'));
 });
 
@@ -1116,35 +1673,25 @@ expContent.addEventListener('mousemove', (e) => {
     const currentX = e.clientX - rect.left + expContent.scrollLeft;
     const currentY = e.clientY - rect.top + expContent.scrollTop;
 
-    const x = Math.min(startX, currentX);
-    const y = Math.min(startY, currentY);
-    const width = Math.abs(currentX - startX);
-    const height = Math.abs(currentY - startY);
-    
-    selectionBox.style.left = x + 'px';
-    selectionBox.style.top = y + 'px';
-    selectionBox.style.width = width + 'px';
-    selectionBox.style.height = height + 'px';
+    selectionBox.style.left = Math.min(startX, currentX) + 'px';
+    selectionBox.style.top = Math.min(startY, currentY) + 'px';
+    selectionBox.style.width = Math.abs(currentX - startX) + 'px';
+    selectionBox.style.height = Math.abs(currentY - startY) + 'px';
 
     const boxRect = selectionBox.getBoundingClientRect();
     document.querySelectorAll('.file-item').forEach(item => {
         const itemRect = item.getBoundingClientRect();
-
         if(!(boxRect.right < itemRect.left || boxRect.left > itemRect.right || boxRect.bottom < itemRect.top || boxRect.top > itemRect.bottom)){
             item.classList.add('selected');
         } else {
-            item.classList.remove('selected')
+            item.classList.remove('selected');
         }
     });
 });
 
 document.addEventListener('mouseup', () => {
-    if(selectionBox){
-        selectionBox.remove();
-        selectionBox = null;
-    }
+    if(selectionBox){ selectionBox.remove(); selectionBox = null; }
 });
-
 
 
 /* Terminal Engine */
@@ -1323,7 +1870,7 @@ termInput.addEventListener('keydown', (e) => {
             const contents = new Set();
             if (termCurrentDir === 'Root') {
                 contents.add('Documents');
-                contents.add('Pictures');
+                contents.add('Desktop');
             }
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -1343,7 +1890,7 @@ termInput.addEventListener('keydown', (e) => {
             let isDir = false;
             
             if (words.length > 1) {
-                isDir = (match === 'Documents' || match === 'Pictures');
+                isDir = (match === 'Documents' || match === 'Desktop');
                 for (let i = 0; i < localStorage.length; i++) {
                     if (localStorage.key(i).startsWith(`webos-file-${termCurrentDir}/${match}/`)) {
                         isDir = true; break;
@@ -1373,7 +1920,7 @@ termInput.addEventListener('keydown', (e) => {
             const formattedMatches = sortedMatches.map(m => {
                 if (words.length === 1) return m; 
                 
-                let isDir = (m === 'Documents' || m === 'Pictures');
+                let isDir = (m === 'Documents' || m === 'Desktop');
                 for (let i = 0; i < localStorage.length; i++) {
                     if (localStorage.key(i).startsWith(`webos-file-${termCurrentDir}/${m}/`)) {
                         isDir = true; break;
@@ -1505,7 +2052,7 @@ function executeCommand(input) {
             }
             if (termCurrentDir === 'Root') {
                 contents.add('<span style="color: #3b82f6; font-weight: bold;">Documents/</span>');
-                contents.add('<span style="color: #3b82f6; font-weight: bold;">Pictures/</span>');
+                contents.add('<span style="color: #3b82f6; font-weight: bold;">Desktop/</span>');
             }
             if (contents.size > 0) out(Array.from(contents).sort().join('  '), true);
             break;
@@ -1522,7 +2069,7 @@ function executeCommand(input) {
                 
                 if (dirLower === 'root') termCurrentDir = 'Root';
                 else if (dirLower === 'root/documents') termCurrentDir = 'Root/Documents';
-                else if (dirLower === 'root/pictures') termCurrentDir = 'Root/Pictures';
+                else if (dirLower === 'root/desktop') termCurrentDir = 'Root/Desktop';
                 else if (dirLower === 'root/trash' || dirLower === 'trash') termCurrentDir = 'Trash';
                 else {
                     let folderExists = false;
@@ -1613,3 +2160,30 @@ function executeCommand(input) {
     
     return true;
 }
+
+
+/*System init*/
+
+document.addEventListener('DOMContentLoaded', () => {
+    initFileSystem(); 
+    updateClock();
+    if (typeof updatePrompt === 'function') updatePrompt();
+    
+    const wallpOpt = localStorage.getItem('wallp-opt');
+    if (wallpOpt === 'custom' && typeof setWallpaper === 'function') {
+        setWallpaper(localStorage.getItem('wallpaper-url'));
+    } else if (wallpOpt === 'nasa' && typeof setWallpaper === 'function') {
+        setWallpaper(localStorage.getItem('nasa-img'));
+    }
+    const wSelect = document.getElementById('wallpaper-select');
+    if (wSelect) wSelect.value = wallpOpt || 'default';
+
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+        const savedX = localStorage.getItem(icon.id + '-x');
+        const savedY = localStorage.getItem(icon.id + '-y');
+        if (savedX) icon.style.left = savedX;
+        if (savedY) icon.style.top = savedY;
+    });
+
+    refreshFileExplorer();
+});

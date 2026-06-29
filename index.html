@@ -8,6 +8,7 @@
         <div id="boot-screen">
             <pre id="boot-text"></pre>
         </div>
+        <div id="shutdown-screen">System halted.<br><br>It is now safe to close the browser.</div>
 
         <div class="desktop-environment">
             <div class="desktop-icon" id="desktop-notepad" style="top: 20px; left: 20px;" draggable="false">
@@ -31,14 +32,22 @@
 
         <div class="context-menu" id="desktop-context-menu" style="display: none;">
             <div class="context-item" id="context-refresh">Refresh</div>
-            <div class="context-divider"></div>
             <div class="context-item" id="context-settings">Personalize...</div>
         </div>
         <div class="context-menu" id="file-context-menu" style="display: none;">
-            <div class="context-item" id="file-context-restore" style="display: none; color: green;">Restore to Root</div>
+            <div class="context-item" id="file-context-copy">Copy</div>
             <div class="context-item" id="file-context-rename">Rename</div>
-            <div class="context-divider"></div>
-            <div class="context-item" id="file-context-delete" style="color: darkred;">Delete</div>
+            <div class="context-item" id="file-context-delete">Delete</div>
+            <div class="context-item" id="file-context-restore" style="display: none;">Restore</div>
+            <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+            <div class="context-item" id="file-context-properties">Properties</div>
+        </div>
+
+        <div class="context-menu" id="folder-context-menu" style="display: none;">
+            <div class="context-item" id="folder-context-new">New Folder</div>
+            <div class="context-item" id="folder-context-paste">Paste</div>
+            <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+            <div class="context-item" id="folder-context-properties">Properties</div>
         </div>
         
         <div class="start-menu" id="start-menu" style="display: none;">
@@ -99,12 +108,18 @@
                 <div class="explorer-sidebar">
                     <div class="sidebar-item active" data-path="Root">Root</div>
                     <div class="sidebar-item" data-path="Root/Documents">Documents</div>
-                    <div class="sidebar-item" data-path="Root/Pictures">Pictures</div>
+                    <div class="sidebar-item" data-path="Root/Desktop">Desktop</div>
                     <div class="sidebar-item" data-path="Trash">Recycle Bin</div>
                 </div>
 
-                <div class="window-content" style="padding: 10px; background-color: #fff; overflow-y: auto; flex-grow: 1;">
-                    <div class="file-grid" id="file-list-container"></div>
+                <div class="window-content" style="padding: 10px; background: var(--bg-color); overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column;">
+                    <div id="list-headers" style="display: none; grid-template-columns: 35px 2fr 1.5fr 1fr; gap: 10px; border-bottom: 1px solid var(--border-color); padding: 5px 15px; margin-bottom: 8px; font-size: 12px; font-weight: bold; color: #888; user-select: none;">
+                        <div></div>
+                        <div class="sort-header" data-sort="name" style="cursor: pointer; color: var(--text-color);">Name <span class="sort-arrow">▲</span></div>
+                        <div class="sort-header" data-sort="date" style="cursor: pointer;">Date Modified <span class="sort-arrow"></span></div>
+                        <div class="sort-header" data-sort="type" style="cursor: pointer;">Type <span class="sort-arrow"></span></div>
+                    </div>
+                    <div class="file-grid" id="file-list-container" style="flex-grow: 1;"></div>
                 </div>
             </div>
         </div>
@@ -230,10 +245,27 @@
                         </div>
                         <select id="default-save-select" class="modern-select">
                             <option value="Root/Documents">Documents</option>
-                            <option value="Root/Pictures">Pictures</option>
+                            <option value="Root/Desktop">Desktop</option>
                             <option value="Root">Root</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="settings-row" style="align-items: flex-start;">
+                    <div class="settings-text">
+                        <span class="settings-title">System Identity</span>
+                        <span class="settings-desc">Update your credentials. Requires reboot.</span>
+                    </div>
+                    <div class="settings-control-group" style="flex-direction: column; gap: 8px;">
+                        <input type="text" id="set-username-input" class="modern-input" placeholder="Username" style="width: 150px; padding: 5px;">
+                        <input type="text" id="set-hostname-input" class="modern-input" placeholder="Hostname" style="width: 150px; padding: 5px;">
+                        <input type="password" id="set-password-input" class="modern-input" placeholder="New Password" style="width: 150px; padding: 5px;">
+                        <button id="btn-save-identity" class="modern-input" style="cursor: pointer; background: #3b82f6; color: white; border: none;">Apply Changes</button>
+                    </div>
+                </div>
+
+                <div class="settings-row" style="margin-top: 10px; border-bottom: none;">
+                    <button id="btn-shutdown" style="width: 100%; background: rgba(255, 95, 86, 0.1); border: 1px solid #ff5f56; color: #ff5f56; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">Shutdown System</button>
                 </div>
             </div>
         </div>
@@ -292,6 +324,45 @@
                         Don't show this on startup
                     </label>
                     <button id="welcome-start-btn" class="welcome-btn">Enter Workspace</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="window" id="properties-window" style="display: none; top: 150px; left: 400px; width: 320px; z-index: 9999;">
+            <div class="title-bar">
+                <div class="window-title" id="prop-title">Properties</div>
+                <div class="window-controls">
+                    <button id="prop-close-btn" class="close-btn">x</button>
+                </div>
+            </div> 
+            <div class="window-content" style="padding: 20px; background: var(--bg-color); font-size: 13px;">
+                <div style="display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
+                    <div id="prop-icon" style="font-size: 45px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">📄</div>
+                    <input type="text" id="prop-name" class="modern-input" style="font-weight: bold; font-size: 14px; width: 100%;" readonly>
+                </div>
+                <div style="display: grid; grid-template-columns: 70px 1fr; gap: 12px; color: var(--text-color);">
+                    <div style="color: #888;">Type:</div><div id="prop-type" style="font-weight: 500;">Text Document</div>
+                    <div style="color: #888;">Location:</div><div id="prop-location" style="word-break: break-all; color: #3b82f6;">Root/Documents</div>
+                    <div style="color: #888;">Contains:</div><div id="prop-contains">--</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="os-dialog-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 99999999; align-items: center; justify-content: center;">
+            <div id="os-dialog-window" class="window" style="width: 320px; min-width: 320px !important; min-height: auto !important; height: auto !important; box-shadow: 0 20px 40px rgba(0,0,0,0.5); resize: none !important; border-radius: 12px !important;">
+                <div class="title-bar" id="os-dialog-titlebar" style="padding: 10px 15px !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
+                    <span id="os-dialog-title" class="window-title" style="font-size: 13px !important; color: #fff !important;">System</span>
+                    <div class="window-controls">
+                        <button id="os-dialog-close-btn" class="close-btn"></button>
+                    </div>
+                </div>
+                <div class="window-content" style="padding: 20px 20px 15px 20px !important; display: flex; flex-direction: column; gap: 20px; background: rgba(20, 15, 18, 0.95) !important; flex: none !important;">
+                    <div id="os-dialog-message" style="font-size: 14px; line-height: 1.5; word-wrap: break-word; color: #e0e0e0;"></div>
+                    <input type="text" id="os-dialog-input" class="modern-input" style="display:none; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,183,197,0.2); padding: 10px; border-radius: 6px; color: #fff; outline: none;">
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button id="os-dialog-btn-cancel" style="display: none; padding: 6px 16px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; background: transparent; color: #e0e0e0; font-size: 13px; font-family: inherit;">Cancel</button>
+                        <button id="os-dialog-btn-ok" style="padding: 6px 16px; cursor: pointer; border: none; border-radius: 6px; background: #3b82f6; color: white; font-weight: bold; font-size: 13px; font-family: inherit; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.4);">OK</button>
+                    </div>
                 </div>
             </div>
         </div>
