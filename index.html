@@ -8,23 +8,26 @@
         <div id="boot-screen">
             <pre id="boot-text"></pre>
         </div>
-        <div id="shutdown-screen">System halted.<br><br>It is now safe to close the browser.</div>
+        <div id="shutdown-screen">
+            <div id="shutdown-spinner"></div>
+            <div id="shutdown-text">Shutting down...</div>
+        </div>
 
         <div class="desktop-environment">
             <div class="desktop-icon" id="desktop-notepad" style="top: 20px; left: 20px;" draggable="false">
                 <div class="icon-emoji">📝</div>
                 <div class="icon-label">Notepad</div>
             </div>
-            <div class="desktop-icon" id="desktop-calculator" style="top: 110px; left: 20px;" draggable="false">
+            <div class="desktop-icon" id="desktop-calculator" style="top: 120px; left: 20px;" draggable="false">
                 <div class="icon-emoji">🧮</div>
                 <div class="icon-label">Calculator</div>
             </div>
 
-            <div class="desktop-icon" id="desktop-explorer" style="top: 200px; left: 20px;" draggable="false">
+            <div class="desktop-icon" id="desktop-explorer" style="top: 220px; left: 20px;" draggable="false">
                 <div class="icon-emoji">📁</div>
                 <div class="icon-label">File Manager</div>
             </div>
-            <div class="desktop-icon" id="desktop-terminal" style="top: 290px; left: 20px;" draggable="false">
+            <div class="desktop-icon" id="desktop-terminal" style="top: 320px; left: 20px;" draggable="false">
                 <div class="icon-emoji">⌨️</div>
                 <div class="icon-label">Terminal</div>
             </div>
@@ -71,7 +74,7 @@
             <div class="window-content" style="padding: 0; height: 100%;">
 
                 <div class="app-toolbar">
-                    <input type="text" id="np-file-name" value="Untitled.txt" style="width: 100px; font-size: 12px; padding: 2px;">
+                    <input type="text" id="np-file-name" class="modern-input" value="Untitled.txt" style="width: 100px; font-size: 12px; padding: 2px;">
                     <button id="np-save-btn">Save</button>
                     <button id="np-clear-btn">Delete</button>
                     <span id="np-status-text" style="font-size: 12px; color: green; display: none; font-weight: bold;">Saved</span>
@@ -198,7 +201,7 @@
                                 <option value="custom">Custom URL...</option>
                                 <option value="nasa">NASA Picture of the Day</option>
                             </select>
-                            <input type="text" id="custom-wallpaper-url" class="modern-imput" placeholder="Paste URL here..." style="display: none;">
+                            <input type="text" id="custom-wallpaper-url" class="modern-input" placeholder="Paste URL here..." style="display: none;">
                             <p id="nasa-error" class="error-text" style="display: none;">NASA Image unavailable.</p>
                         </div>
                     </div>
@@ -249,24 +252,47 @@
                             <option value="Root">Root</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="settings-row" style="align-items: flex-start;">
-                    <div class="settings-text">
-                        <span class="settings-title">System Identity</span>
-                        <span class="settings-desc">Update your credentials. Requires reboot.</span>
+                    
+                    <div class="settings-row" style="align-items: center;">
+                        <div class="settings-text">
+                            <span class="settings-title">System Identity</span>
+                            <span class="settings-desc">Update user credentials.</span>
+                        </div>
+                        <button id="btn-manage-identity" style="width: auto; cursor: pointer; padding: 8px 16px; font-family: inherit; background: rgba(255, 183, 197, 0.15); color: #ffb7c5; border: 1px solid rgba(255,183, 197, 0.3); border-radius: 6px; font-weight: 600; transition: all 0.2s ease;">Manage Identity...</button>
                     </div>
-                    <div class="settings-control-group" style="flex-direction: column; gap: 8px;">
-                        <input type="text" id="set-username-input" class="modern-input" placeholder="Username" style="width: 150px; padding: 5px;">
-                        <input type="text" id="set-hostname-input" class="modern-input" placeholder="Hostname" style="width: 150px; padding: 5px;">
-                        <input type="password" id="set-password-input" class="modern-input" placeholder="New Password" style="width: 150px; padding: 5px;">
-                        <button id="btn-save-identity" class="modern-input" style="cursor: pointer; background: #3b82f6; color: white; border: none;">Apply Changes</button>
+                    
+                    <div class="settings-row" style="margin-top: 10px; border-bottom: none;">
+                        <button id="btn-shutdown" style="flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #ff5f56; border: 1px solid #ff5f56; background: rgba(255, 95, 86, 0.1); border-radius: 6px; transition: 0.2s;">Shutdown System</button>
+                        <button id="btn-restart" style="flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #3b82f6; border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.1); border-radius: 6px; transition: 0.2s;">Restart System</button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="settings-row" style="margin-top: 10px; border-bottom: none;">
-                    <button id="btn-shutdown" style="width: 100%; background: rgba(255, 95, 86, 0.1); border: 1px solid #ff5f56; color: #ff5f56; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">Shutdown System</button>
+        <div class="window" id="identity-window" style="display: none; top: 120px; left: 350px; width: 340px; min-height: 350px; z-index: 10000;">
+            <div class="title-bar">
+                <div class="window-title">Manage Identity</div>
+                <div class="window-controls">
+                    <button id="id-close-btn">X</button>
                 </div>
+            </div>
+            <div class="window-content" style="gap: 12px; overflow-y: visible;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; color: var(--text-color, #888);">Username</label>
+                    <input type="text" id="id-username-input" class="modern-input">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; color: var(--text-color, #888);">Hostname</label>
+                    <input type="text" id="id-hostname-input" class="modern-input">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; color: var(--text-color, #888);">New Password</label>
+                    <input type="password" id="id-password-input" class="modern-input" placeholder="Leave blank to keep current">
+                    <label style="font-size: 11px; display: flex; align-items: center; gap: 5px; margin-top: 4px; cursor: pointer;">
+                        <input type="checkbox" id="id-show-password"> Show Password
+                    </label>
+                </div>
+                <button id="btn-save-new-identity" style="margin-top: auto; background: #3b82f6; color: white; border: none; cursor: pointer; padding: 10px; border-radius: 6px;">Save & Reboot</button>
             </div>
         </div>
 
@@ -353,10 +379,10 @@
                 <div class="title-bar" id="os-dialog-titlebar" style="padding: 10px 15px !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;">
                     <span id="os-dialog-title" class="window-title" style="font-size: 13px !important; color: #fff !important;">System</span>
                     <div class="window-controls">
-                        <button id="os-dialog-close-btn" class="close-btn"></button>
+                        <button id="os-dialog-close-btn" class="close-btn">x</button>
                     </div>
                 </div>
-                <div class="window-content" style="padding: 20px 20px 15px 20px !important; display: flex; flex-direction: column; gap: 20px; background: rgba(20, 15, 18, 0.95) !important; flex: none !important;">
+                <div class="window-content" style="padding: 20px 20px 15px 20px !important; display: flex; flex-direction: column; gap: 20px; flex: none !important;">
                     <div id="os-dialog-message" style="font-size: 14px; line-height: 1.5; word-wrap: break-word; color: #e0e0e0;"></div>
                     <input type="text" id="os-dialog-input" class="modern-input" style="display:none; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,183,197,0.2); padding: 10px; border-radius: 6px; color: #fff; outline: none;">
                     <div style="display: flex; justify-content: flex-end; gap: 10px;">

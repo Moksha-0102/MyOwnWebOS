@@ -34,7 +34,10 @@ function showOsDialog({type, message, title = "System", defaultValue = ""}){
         btnClose.onclick = () => cleanup(type === 'prompt' ? null : false);
 
         osDialogInput.onkeydown = (e) => {
-            if (e.key === 'Enter') cleanup(osDialogInput.value);
+            if (e.key === 'Enter'){
+                e.preventDefault();;
+                cleanup(osDialogInput.value);
+            }
             if (e.key === 'Escape') cleanup(null);
         };
     });
@@ -76,7 +79,7 @@ function updateClock() {
     const colon = seconds % 2 === 0 ? ':' : ' ';
     document.querySelector('.clock').textContent = `${displayHours}${colon}${minutes} ${ampm}`;
 }
-setInterval(updateClock, 1000);
+let systemClockInterval = setInterval(updateClock, 1000);
 
 
 /*Drag and Drop*/
@@ -141,8 +144,8 @@ document.addEventListener('mouseup', () => {
     if (isDragging && draggedWindow && draggedWindow.classList.contains('desktop-icon')) {
         const currentX = parseInt(draggedWindow.style.left, 10);
         const currentY = parseInt(draggedWindow.style.top, 10);
-        const snappedX = Math.round(currentX / 90) * 90 + 20;
-        const snappedY = Math.round(currentY / 90) * 90 + 20;
+        const snappedX = Math.round(currentX / 100) * 100 + 20;
+        const snappedY = Math.round(currentY / 100) * 100 + 20;
 
         draggedWindow.style.left = snappedX + 'px';
         draggedWindow.style.top = snappedY + 'px';
@@ -348,30 +351,109 @@ const setUsername = document.getElementById('set-username-input');
 const setHostname = document.getElementById('set-hostname-input');
 const setPassword = document.getElementById('set-password-input');
 
-document.getElementById('menu-settings').addEventListener('click', () => {
-    setUsername.value = localStorage.getItem('os-username') || '';
-    setHostname.value = localStorage.getItem('os-hostname') || '';
-    setPassword.value = '';
+
+document.getElementById('btn-manage-identity').addEventListener('click', async () => {
+    const currentPass = localStorage.getItem('os-password');
+    
+    if (currentPass && currentPass.length > 0) {
+        let authenticated = false;
+        while (!authenticated) {
+            const attempt = await osPrompt("Enter current password to continue (or type 'recover'):", "", "Security Check");
+            
+            if (attempt === null) return; 
+            
+            if (attempt === currentPass) {
+                authenticated = true;
+            } else if (attempt.toLowerCase() === 'recover') {
+                localStorage.removeItem('os-password'); // Actually clear it!
+                await osAlert("Security Override. Password has been removed.", "System Security");
+                authenticated = true;
+            } else {
+                await osAlert("Incorrect password. Please try again.", "Authentication Failed");
+            }
+        }
+    }
+
+    document.getElementById('id-username-input').value = localStorage.getItem('os-username') || '';
+    document.getElementById('id-hostname-input').value = localStorage.getItem('os-hostname') || '';
+    document.getElementById('id-password-input').value = '';
+    document.getElementById('id-show-password').checked = false;
+    document.getElementById('id-password-input').type = 'password'; 
+    
+    const idWin = document.getElementById('identity-window');
+    idWin.style.display = 'flex';
+    highestZIndex++;
+    idWin.style.zIndex = highestZIndex;
 });
 
-document.getElementById('btn-save-identity').addEventListener('click', async () => {
-    if (await osConfirm("Applying new system identity requires a reboot. Proceed?", "System Settings")){
-        if (setUsername.value.trim()) localStorage.setItem('os-username', setUsername.value.trim().toLowerCase());
-        if (setHostname.value.trim()) localStorage.setItem('os-hostname', setHostname.value.trim().toLowerCase());
-        if (setPassword.value) localStorage.setItem('os-password', setPassword.value);
+document.getElementById('id-show-password').addEventListener('change', (e) => {
+    const passInput = document.getElementById('id-password-input');
+    passInput.type = e.target.checked ? 'text' : 'password';
+});
+
+document.getElementById('id-close-btn').addEventListener('click', () => {
+    document.getElementById('identity-window').style.display = 'none';
+});
+
+document.getElementById('btn-save-new-identity').addEventListener('click', async () => {
+    if (await osConfirm("Applying new system identity requires a reboot. Proceed?", 'System Settings')){
+        const uName = document.getElementById('id-username-input').value.trim();
+        const hName = document.getElementById('id-hostname-input').value.trim();
+        const pass = document.getElementById('id-password-input').value;
+
+        if (uName) localStorage.setItem('os-username', sanitizeIdentity(uName.toLowerCase()));
+        if (hName) localStorage.setItem('os-hostname', sanitizeIdentity(hName.toLowerCase()));
+        if (pass !== '') localStorage.setItem('os-password', pass);
 
         document.body.style.display = 'none';
         setTimeout(() => location.reload(), 200);
     }
 });
 
-document.getElementById('btn-shutdown').addEventListener('click', () => {
-    document.querySelectorAll('.window').forEach(w => w.style.display = 'none');
-    document.querySelector('.taskbar').style.display = 'none';
-    document.querySelector('.desktop-environment').style.display = 'none';
+
+function initiateSystemPower(action) {
+    clearInterval(systemClockInterval);
+    document.body.style.pointerEvents = 'none';
 
     const shutScreen = document.getElementById('shutdown-screen');
+    const shutText = document.getElementById('shutdown-text');
+    const shutSpinner = document.getElementById('shutdown-spinner');
+
     shutScreen.style.display = 'flex';
+
+    if (action === 'restart'){
+        shutText.innerHTML = "Restarting...";
+        sessionStorage.setItem('boot_context', 'warm');
+    } else {
+        shutText.innerHTML = "Shutting down...";
+        sessionStorage.removeItem('boot_context');
+    }
+
+    requestAnimationFrame(() => {
+        shutScreen.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+        if (action === 'restart'){
+            location.reload();
+        } else {
+            shutSpinner.style.display = 'none';
+            if (document.body.classList.contains('theme-retro')){
+                shutText.innerHTML = "It is now safe to turn off your browser";
+                shutText.style.color = '#ff8c00';
+            } else {
+                shutText.innerHTML = "System halted.<br><br>You may now close the browser tab."
+            }
+        }
+    }, 2500)
+}
+
+document.getElementById('btn-shutdown').addEventListener('click', () => {
+    initiateSystemPower('shutdown');
+})
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+    initiateSystemPower('restart');
 })
 
 
@@ -473,6 +555,9 @@ function getUserHardwareData() {
 }
 
 async function runBootSequence() {
+
+    const bootContext = sessionStorage.getItem('boot_context') || 'cold';
+    sessionStorage.removeItem('boot_context');
     let outputHTML = "";
     
     const updateScreen = (text) => {
@@ -576,14 +661,14 @@ async function runBootSequence() {
         updateScreen(hostPrompt);
         let hostInput = await readLine(hostPrompt);
         hostInput = hostInput || 'webos';
-        localStorage.setItem('os-hostname', hostInput.toLowerCase());
+        localStorage.setItem('os-hostname', sanitizeIdentity(hostInput.toLowerCase()));
 
         await sleep(300);
         const userPrompt = "Enter primary username: ";
         updateScreen(userPrompt);
         let userInput = await readLine(userPrompt);
         userInput = userInput || 'guest';
-        localStorage.setItem('os-username', userInput.toLowerCase());
+        localStorage.setItem('os-username', sanitizeIdentity(userInput.toLowerCase()));
         
         await sleep(300);
         const passPrompt = "Enter administrator password (leave blank for none): ";
@@ -652,100 +737,140 @@ Stardance BIOS (C) 1995
         await sleep(800);
         updateScreen(logo);
         await sleep(300);
-        
-        updateScreen(`CPU: WebOS Virtual Processor (${hw.cores} Cores Detected)\n`);
-        await sleep(150);
-        updateScreen(`Video: ${hw.gpuName.substring(0, 45)}\n`); 
-        await sleep(150);
-        updateScreen(`Display: ${hw.resolution} Color Mode\n\n`);
-        await sleep(500);
-        
-        updateScreen("Memory Test: 0KB");
-        const totalKB = hw.ramMB * 1024;
-        const chunk = Math.floor(totalKB / 22); 
-        for (let i = 1024; i <= totalKB; i += chunk) {
-            replaceLastLine(`Memory Test: ${i}KB`);
-            await sleep(25 + Math.random() * 30); 
-        }
-        replaceLastLine(`Memory Test: ${totalKB}KB OK\n`);
-        
-        await sleep(300);
-        updateScreen("\nCMOS Checksum... OK\n\n");
-        await sleep(250);
-        
-        updateScreen("Detecting Primary Master   ... ");
-        await sleep(1000 + Math.random() * 600);
-        updateScreen(`HOST DRIVE (${hostOS})\n`);
-        
-        updateScreen("Detecting Primary Slave    ... ");
-        await sleep(600);
-        updateScreen("None\n\n");
-        
-        updateScreen("Press ESC to change System Architecture\n\n");
-        await sleep(1200);
 
-        updateScreen("PCI Device Listing...\n");
-        await sleep(100);
-        updateScreen("Bus Dev Fun Vendor Device  SVID  SDEV  Class\n");
-        updateScreen("--------------------------------------------\n");
-        await sleep(100);
-        updateScreen("  0   0   0  8086   7190   0000  0000  Host Bridge\n");
-        await sleep(50);
-        updateScreen("  0  12   0  10EC   8139   0000  0000  Ethernet\n");
-        await sleep(50);
-        updateScreen("  1   0   0  10DE   0020   0000  0000  VGA Display\n\n");
-        await sleep(700);
+        if (bootContext === 'warm'){
+            updateScreen("Warm Reset Detected. \n");
+            await sleep(500);
+            updateScreen("Bypassing POST Memory Test...\n");
+            await sleep(1000);
+            updateScreen("Initializing CMOS RAM... OK\n");
+            await sleep(700);
+            updateScreen("\nLoading Kernel Modules (Fast Mode):\n");
+            
+            const fastModules = ["VFS Bridge", "Network Sync", "GUI Compositor"];
+            for (let mod of fastModules) {
+                updateScreen(`  [ OK ] ${mod}\n`);
+                await sleep(500 + Math.random() * 80);
+            }
+            await sleep(600);
+        } else {
+            updateScreen(`CPU: WebOS Virtual Processor (${hw.cores} Cores Detected)\n`);
+            await sleep(150);
+            updateScreen(`Video: ${hw.gpuName.substring(0, 45)}\n`); 
+            await sleep(150);
+            updateScreen(`Display: ${hw.resolution} Color Mode\n\n`);
+            await sleep(500);
+            
+            updateScreen("Memory Test: 0KB");
+            const totalKB = hw.ramMB * 1024;
+            const chunk = Math.floor(totalKB / 22); 
+            for (let i = 1024; i <= totalKB; i += chunk) {
+                replaceLastLine(`Memory Test: ${i}KB`);
+                await sleep(25 + Math.random() * 30); 
+            }
+            replaceLastLine(`Memory Test: ${totalKB}KB OK\n`);
+            
+            await sleep(300);
+            updateScreen("\nCMOS Checksum... OK\n\n");
+            await sleep(250);
+            
+            updateScreen("Detecting Primary Master   ... ");
+            await sleep(1000 + Math.random() * 600);
+            updateScreen(`HOST DRIVE (${hostOS})\n`);
+            
+            updateScreen("Detecting Primary Slave    ... ");
+            await sleep(600);
+            updateScreen("None\n\n");
+            
+            updateScreen("Press ESC to change System Architecture\n\n");
+            await sleep(1200);
 
-        updateScreen("Loading Kernel Modules:\n");
-        const modules = ["Network Interface", "Graphical Window Manager", "Terminal AST Engine"];
-        for (let mod of modules) {
-            updateScreen(`  [ OK ] ${mod}\n`);
-            await sleep(80 + Math.random() * 150);
+            updateScreen("PCI Device Listing...\n");
+            await sleep(100);
+            updateScreen("Bus Dev Fun Vendor Device  SVID  SDEV  Class\n");
+            updateScreen("--------------------------------------------\n");
+            await sleep(100);
+            updateScreen("  0   0   0  8086   7190   0000  0000  Host Bridge\n");
+            await sleep(50);
+            updateScreen("  0  12   0  10EC   8139   0000  0000  Ethernet\n");
+            await sleep(50);
+            updateScreen("  1   0   0  10DE   0020   0000  0000  VGA Display\n\n");
+            await sleep(700);
+
+            updateScreen("Loading Kernel Modules:\n");
+            const modules = ["Network Interface", "Graphical Window Manager", "Terminal AST Engine"];
+            for (let mod of modules) {
+                updateScreen(`  [ OK ] ${mod}\n`);
+                await sleep(80 + Math.random() * 150);
+            }
+            
+            await sleep(400);
         }
-        
-        await sleep(400);
 
     } else {
         bootText.innerHTML = '<span class="boot-cursor"></span>';
         await sleep(250);
-        
-        updateScreen("Stardance UEFI Firmware v3.1.4\n");
-        await sleep(50);
-        updateScreen("Initializing ACPI tables... OK\n\n");
-        await sleep(100);
-        
-        updateScreen(`CPU: Local Host Processor (${hw.cores} Logical Cores)\n`);
-        updateScreen(`RAM: ${hw.ramMB} MB DDR5-6400 MT/s\n`);
-        updateScreen(`GPU: ${hw.gpuName}\n`);
-        updateScreen(`DSP: ${hw.resolution} @ 60Hz\n`);
-        updateScreen(`HST: ${hostOS} Bridge Established\n\n`);
-        await sleep(300);
 
-        updateScreen("Press ESC to change System Architecture...\n\n");
-        await sleep(800);
+        if (bootContext === 'warm') {
+            updateScreen("Stardance UEFI FastBoot v3.1.4\n");
+            await sleep(150);
+            updateScreen("Warm reset detected. Flushing ACPI tables... OK\n");
+            await sleep(1000);
+            updateScreen("Reloading microcode... OK\n");
+            updateScreen("Bypassing full memory POST.\n\n");
+            await sleep(800);
 
-        updateScreen("Scanning NVMe devices... ");
-        await sleep(150);
-        updateScreen("OK\n");
-        updateScreen("nvme0n1: STARDANCE-VFS-LOCAL (PCIe Gen5 x4) [ OK ]\n\n");
-        await sleep(150);
-        
-        const services = [
-            "Mounted /Root (ext4)",
-            "Mounted /Trash",
-            "Started Virtual File System",
-            "Started Network Interface Manager",
-            "Started Terminal AST Subsystem"
-        ];
+            const fastServices = [
+                "Mounting Virtual File System (Fast Mode)",
+                "Restoring NVRAM context",
+                "Initializing Window Manager",
+                "Loading Desktop Environment"
+            ];
+            
+            for (let srv of fastServices) {
+                updateScreen(`[  OK  ] ${srv}\n`);
+                await sleep(400 + Math.random() * 50); // Scrolls quickly but visibly
+            }
+            await sleep(200);
+        } else {
+            updateScreen("Stardance UEFI Firmware v3.1.4\n");
+            await sleep(50);
+            updateScreen("Initializing ACPI tables... OK\n\n");
+            await sleep(100);
+            
+            updateScreen(`CPU: Local Host Processor (${hw.cores} Logical Cores)\n`);
+            updateScreen(`RAM: ${hw.ramMB} MB DDR5-6400 MT/s\n`);
+            updateScreen(`GPU: ${hw.gpuName}\n`);
+            updateScreen(`DSP: ${hw.resolution} @ 60Hz\n`);
+            updateScreen(`HST: ${hostOS} Bridge Established\n\n`);
+            await sleep(300);
 
-        for (let srv of services) {
-            updateScreen(`[  OK  ] ${srv}\n`);
-            await sleep(10 + Math.random() * 30);
+            updateScreen("Press ESC to change System Architecture...\n\n");
+            await sleep(800);
+
+            updateScreen("Scanning NVMe devices... ");
+            await sleep(150);
+            updateScreen("OK\n");
+            updateScreen("nvme0n1: STARDANCE-VFS-LOCAL (PCIe Gen5 x4) [ OK ]\n\n");
+            await sleep(150);
+            
+            const services = [
+                "Mounted /Root (ext4)",
+                "Mounted /Trash",
+                "Started Virtual File System",
+                "Started Network Interface Manager",
+                "Started Terminal AST Subsystem"
+            ];
+
+            for (let srv of services) {
+                updateScreen(`[  OK  ] ${srv}\n`);
+                await sleep(10 + Math.random() * 30);
+            }
+            
+            await sleep(150);
+            updateScreen("[  OK  ] Reached target GUI.\n");
+            await sleep(400); 
         }
-        
-        await sleep(150);
-        updateScreen("[  OK  ] Reached target GUI.\n");
-        await sleep(400); 
     }
 
     const savedPassword = localStorage.getItem('os-password');
@@ -894,6 +1019,10 @@ document.getElementById('default-save-select').addEventListener('change', (e) =>
 
 function sanitizeFileName(name) {
     return name.replace(/[\\/:*?"<>]/g, '').trim() || 'Untitled.txt';
+}
+
+function sanitizeIdentity (input) {
+    return input.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 16);
 }
 
 function showStatus(message, color = 'green') {
@@ -1797,11 +1926,19 @@ termInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const inputStr = termInput.value.trim();
         const line = document.createElement('div');
+        line.style.display = 'flex';
+        line.style.alignItems = 'flex-start';
+        line.style.marginTop = '4px';
         const promptSpan = document.createElement('span');
         promptSpan.className = 'term-prompt';
         promptSpan.textContent = termPrompt.textContent;
+        const contentSpan = document.createElement('span');
+        contentSpan.textContent = inputStr;
+        contentSpan.style.flexGrow = '1';
+        contentSpan.style.whiteSpace = 'pre-wrap';
+
         line.appendChild(promptSpan);
-        line.appendChild(document.createTextNode(' ' + inputStr));
+        line.appendChild(contentSpan);
         termOutput.appendChild(line);
         termContent.scrollTop = termContent.scrollHeight;
         termInput.value = '';
