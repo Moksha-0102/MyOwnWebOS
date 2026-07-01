@@ -1,0 +1,700 @@
+/* RETRO THEME */
+
+body.theme-retro {
+    background-color: #008080 !important;
+    background-image: none !important;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif !important;
+}
+
+.theme-retro .window, .theme-retro .welcome-modal, .theme-retro .start-menu, .theme-retro .context-menu, .theme-retro .welcome-modal {
+    background: #c0c0c0 !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    border-radius: 0 !important;
+    border-top: 1px solid #fff !important;
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #0a0a0a !important;
+    border-bottom: 1px solid #0a0a0a !important;
+    box-shadow: inset -1px -1px #808080, inset 1px 1px #dfdfdf !important;
+    color: #000 !important;
+    padding: 2px !important;
+}
+
+.theme-retro .title-bar { 
+    background: #000080 !important; 
+    border: none !important; 
+    padding: 2px 4px !important;
+    margin-bottom: 2px !important;
+}
+.theme-retro .window-title { 
+    color: #fff !important; 
+    font-weight: bold !important; 
+    letter-spacing: 0 !important; 
+}
+
+.theme-retro .window-controls button {
+    background: #c0c0c0 !important;
+    border-radius: 0 !important;
+    border-top: 1px solid #fff !important;
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+    color: #000 !important;
+    width: 16px !important;
+    height: 14px !important;
+    font-family: 'Arial', sans-serif !important; 
+    font-size: 10px !important;
+    line-height: 10px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.theme-retro .window-controls button:active {
+    border-top: 1px solid #000 !important;
+    border-left: 1px solid #000 !important;
+    border-right: 1px solid #fff !important;
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf !important;
+    padding-top: 1px !important; 
+    padding-left: 1px !important;
+}
+
+.theme-retro button, .theme-retro .explorer-nav-btns button, .theme-retro .welcome-btn, .theme-retro .calc-btn, .theme-retro .start-button, .theme-retro .app-toolbar button, .theme-retro .taskbar-app {
+    background: #c0c0c0 !important; 
+    border-radius: 0 !important; 
+    border-top: 1px solid #fff !important;
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+    color: #000 !important;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif !important;
+    font-weight: normal !important;
+}
+
+.theme-retro button:active, .theme-retro .welcome-btn:active, .theme-retro .calc-btn:active, .theme-retro .start-button:active, .theme-retro .app-toolbar button:active, .theme-retro .taskbar-app.active {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #0a0a0a !important;
+    border-left: 2px solid #0a0a0a !important;
+    border-right: 2px solid #fff !important;
+    border-bottom: 2px solid #fff !important;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf !important;
+    padding: inherit;
+}
+
+.theme-retro .taskbar {
+    left: 0 !important;
+    bottom: 0 !important; 
+    width: 100% !important; 
+    border-radius: 0 !important;
+    background: #c0c0c0 !important; 
+    backdrop-filter: none !important;
+    border-top: 1px solid #fff !important; 
+    border-left: none !important; 
+    border-right: none !important; 
+    border-bottom: none !important;
+    box-shadow: inset 0 1px #dfdfdf !important;
+    justify-content: flex-start !important; 
+    padding: 4px 6px !important;
+}
+.theme-retro .clock { 
+    color: #000 !important; 
+    margin-left: auto !important; 
+    padding-right: 15px !important; 
+    font-weight: normal !important; 
+}
+
+.theme-retro #start-menu { 
+    bottom: 35px !important; 
+    left: 0 !important; 
+    transform: none !important; 
+    width: 200px !important; 
+}
+
+.theme-retro .context-item, .theme-retro .start-menu-item { 
+    color: #000 !important; 
+    border-radius: 0 !important; 
+}
+
+.theme-retro .context-item:hover, .theme-retro .start-menu-item:hover { 
+    background: #000080 !important; 
+    color: #fff !important; 
+}
+
+.theme-retro .context-divider, .theme-retro .start-menu-divider {
+    height: 0 !important;
+    border-top: 1px solid #808080 !important;
+    border-bottom: 1px solid #fff !important;
+    background: transparent !important;
+    margin: 4px 2px !important;
+}
+
+.theme-retro .notepad-text, .theme-retro .calc-display, .theme-retro .explorer-address-bar, .theme-retro .explorer-search, .theme-retro .modern-input, .theme-retro .modern-select, .theme-retro #explorer-window .window-content {
+    background: #fff !important; 
+    color: #000 !important; 
+    border-radius: 0 !important;
+    border-top: 1px solid #808080 !important;
+    border-left: 1px solid #808080 !important;
+    border-right: 1px solid #fff !important;
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #000, inset -1px -1px #dfdfdf !important;
+}
+
+.theme-retro .welcome-hero h2, .theme-retro .welcome-hero p { 
+    color: #000 !important; 
+}
+
+.theme-retro #welcome-close-btn { 
+    color: #000 !important; 
+    font-weight: bold !important; 
+    font-family: 'Arial', sans-serif !important; 
+    border: none !important; 
+    box-shadow: none !important; 
+    background: transparent !important; 
+}
+
+.theme-retro #welcome-close-btn:hover { 
+    background: transparent !important; 
+    color: #000 !important; 
+}
+
+.theme-retro .modern-toggle { 
+    width: 16px !important; 
+    height: 16px !important; 
+}
+
+.theme-retro .modern-slider {
+    background: #fff !important; 
+    border-radius: 0 !important; 
+    transition: none !important;
+    border-top: 1px solid #808080 !important; 
+    border-left: 1px solid #808080 !important;
+    border-right: 1px solid #fff !important; 
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #000, inset -1px -1px #dfdfdf !important;
+}
+
+.theme-retro .modern-slider:before {
+    display: none !important; 
+}
+
+.theme-retro .modern-toggle input:checked + .modern-slider { 
+    background: #fff !important; 
+}
+
+.theme-retro .modern-toggle input:checked + .modern-slider:after {
+    content: "✔" !important; 
+    color: #000 !important; 
+    font-size: 14px !important;
+    position: absolute !important; 
+    top: -4px !important; 
+    left: 1px !important;
+    font-weight: bold !important;
+}
+
+.theme-retro .modern-checkmark {
+    background: #fff !important; 
+    border-radius: 0 !important; 
+    transition: none !important;
+    border-top: 1px solid #808080 !important; 
+    border-left: 1px solid #808080 !important;
+    border-right: 1px solid #fff !important; 
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #000, inset -1px -1px #dfdfdf !important;
+}
+
+.theme-retro .modern-checkbox-container { 
+    color: #000 !important; 
+}
+
+.theme-retro .modern-checkbox-container input:checked ~ .modern-checkmark { 
+    background: #fff !important; 
+}
+
+.theme-retro .modern-checkmark:after { 
+    color: #000 !important; 
+}
+
+.theme-retro .explorer-sidebar { 
+    background: #c0c0c0 !important; 
+    border: none !important; 
+    border-radius: 0 !important; 
+}
+
+.theme-retro .sidebar-item { 
+    color: #000 !important; 
+    border-radius: 0 !important; 
+}
+
+.theme-retro .sidebar-item:hover, .theme-retro .sidebar-item.active { 
+    background: #000080 !important; 
+    color: #fff !important; 
+}
+
+.theme-retro .icon-label { 
+    background: transparent !important; 
+    color: #fff !important; 
+    text-shadow: none !important; 
+}
+
+.theme-retro .file-item .icon-label { 
+    background: transparent !important; 
+    color: #000 !important; 
+}
+
+.theme-retro .settings-card { 
+    background: transparent !important; 
+    border: none !important; 
+    color: #000 !important; 
+}
+
+.theme-retro .settings-title, .theme-retro .settings-desc { 
+    color: #000 !important; 
+}
+
+.theme-retro .settings-row { 
+    border-bottom: 1px solid #a0a0a0 !important; 
+    padding: 10px 0 !important; 
+}
+
+.theme-retro .file-grid.list-view .file-item { 
+    border-bottom: 1px dashed #a0a0a0 !important; 
+    border-radius: 0 !important; 
+    background: transparent !important; 
+}
+
+.theme-retro .file-grid.list-view .file-item:hover { 
+    background: #000080 !important; 
+}
+
+.theme-retro .file-grid.list-view .file-item:hover .icon-label { 
+    color: #fff !important; 
+}
+
+.theme-retro, .theme-retro * {
+    transition: none !important;
+    transform: none !important;
+}
+
+.theme-retro .desktop-icon:hover, .theme-retro .file-item:hover {
+    background: transparent !important;
+}
+
+.theme-retro .calc-btn:hover{
+    background: #c0c0c0 !important;
+}
+
+.theme-retro .taskbar-app:hover {
+    background: #c0c0c0 !important;
+}
+
+.theme-retro .selection-box {
+    background: transparent !important;
+    border: 1px dotted #000 !important;
+}
+
+.theme-retro .file-item.selected {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+.theme-retro .file-item.selected .icon-label {
+    background: #000080 !important;
+    color: #fff !important;
+    outline: 1px dotted #fff !important;
+}
+
+.theme-retro .taskbar-app {
+    padding: 5px 12px !important;
+}
+
+.theme-retro .taskbar-app.active {
+    background: #c0c0c0 !important;
+    border-top: 1px solid #000 !important;
+    border-left: 1px solid #000 !important;
+    border-right: 1px solid #fff !important;
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #808080 !important;
+    padding: 6px 11px 4px 13px !important;
+}
+
+.theme-retro .welcome-modal {
+    transform: translate(-50%, -50%) !important;
+}
+
+.theme-retro .window.window.maximized {
+    height: calc(100vh - 35px) !important;
+    border-top: 1px solid #fff !important;
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+}
+
+.theme-retro button:active, .theme-retro .welcome-btn:active, .theme-retro .calc-btn:active, .theme-retro .app-toolbar button:active {
+    padding: inherit;
+}
+
+.theme-retro .modern-checkmark:after, .theme-retro .modern-toggle input:checked + .modern-slider {
+    border-color: #808080 !important;
+    box-shadow: inset 1px 1px #000, inset -1px -1px #dfdfdf !important;
+}
+
+.theme-retro .modern-checkbox-container input:checked ~ .modern-checkmark {
+    border-color: #808080 !important;
+}
+
+.theme-retro ::-webkit-scrollbar-track {
+    background-color: #dfdfdf !important;
+    border-left: 1px solid #c0c0c0 !important;
+}
+
+.theme-retro ::-webkit-scrollbar-thumb {
+    background: #c0c0c0 !important;
+    border-top: 1px solid #fff !important;
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    box-shadow: inset -1px -1px #808080, inset 1px 1px #dfdfdf !important;
+    border-radius: 0 !important;
+}
+
+.theme-retro .welcome-sidebar {
+    background: #008080 !important;
+    border-right: 1px solid #000 !important;
+}
+
+.theme-retro .welcome-main {
+    background: #c0c0c0 !important;
+    box-shadow: inset 1px 1px #dfdfdf !important;
+}
+
+.theme-retro .welcome-hero h2 {
+    font-family: 'Arial', sans-serif !important;
+    font-size: 24px !important;
+    font-weight: bold !important;
+}
+
+.theme-retro .sidebar-title {
+    color: #c0c0c0 !important;
+    font-family: 'Arial', sans-serif !important;
+    text-shadow: 1px 1px 0px #000 !important;
+}
+
+.theme-retro .modern-checkmark {
+    width: 14px !important;
+    height: 14px !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+    border-top: 1px solid #808080 !important; 
+    border-left: 1px solid #808080 !important;
+    border-right: 1px solid #fff !important; 
+    border-bottom: 1px solid #fff !important;
+    box-shadow: inset 1px 1px #000, inset -1px -1px #dfdfdf !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.theme-retro .modern-checkmark:after {
+    content: '✔' !important;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif !important;
+    font-size: 11px !important;
+    font-weight: normal !important;
+    color: #000 !important;
+    position: static !important;
+    text-shadow: none !important;
+    margin-top: 0px !important;
+}
+
+.theme-retro .taskbar-left {
+    gap: 4px !important;
+    align-items: center !important;
+}
+
+.theme-retro .start-button, .theme-retro .taskbar-app:not([style*="none"]) {
+    height: 30px !important;
+    padding: 0px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+}
+
+.theme-retro .start-button:active, .theme-retro .taskbar-app:active, .theme-retro .taskbar-app.active {
+    height: 30px;
+    padding: 0 16px !important;
+}
+
+.theme-retro #browser-window .browser-toolbar {
+    background: #c0c0c0 !important;
+    border-bottom: 1px solid #808080 !important;
+}
+
+.theme-retro .browser-btn, .theme-retro #browser-go-btn {
+    background: #c0c0c0 !important;
+    color: #000 !important;
+    border-radius: 0 !important;
+    border-top: 2px solid #fff !important;
+    border-left: 2px solid #fff !important;
+    border-bottom: 2px solid #000 !important;
+    border-right: 2px solid #000 !important;
+    box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif !important;
+}
+
+.theme-retro .browser-btn:active, .theme-retro #browser-go-btn:active {
+    border-top: 2px solid #0a0a0a !important;
+    border-left: 2px solid #0a0a0a !important;
+    border-right: 2px solid #fff !important;
+    border-bottom: 2px solid #fff !important;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #dfdfdf !important;
+    padding: inherit !important;
+}
+
+
+
+
+
+.theme-retro #terminal-window .window-content {
+    background: #000 !important;
+    color: #c0c0c0 !important;
+    border: 2px inset #dfdfdf !important;
+    box-shadow: none !important;
+}
+
+.theme-retro .term-prompt {
+    color: #00ff00 !important;
+}
+
+.theme-retro #term-input {
+    background: transparent !important;
+    color: #c0c0c0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.theme-retro #os-dialog-window {
+    background: #c0c0c0 !important;
+    border-top: 2px solid #fff !important;
+    border-left: 2px solid #fff !important;
+    border-right: 2px solid #0a0a0a !important;
+    border-bottom: 2px solid #0a0a0a !important;
+    box-shadow: inset -1px -1px #808080, inset 1px 1px #dfdfdf !important;
+    border-radius: 0 !important;
+}
+
+.theme-retro #os-dialog-titlebar{ 
+    background: #000080 !important;
+    border: none !important;
+    padding: 3px 4px !important;
+    margin-bottom: 2px !important;
+}
+
+.theme-retro #os-dialog-title {
+    color: #fff !important;
+}
+
+.theme-retro #os-dialog-window .window-content {
+    background: #c0c0c0 !important;
+    color: #000 !important;
+    padding: 15px !important;
+}
+
+.theme-retro #os-dialog-message {
+    color: #000 !important;
+}
+
+.theme-retro #shutdown-screen {
+    color: #ff8c00 !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+.theme-retro #shutdown-spinner {
+    display: none !important;
+}
+
+.theme-retro .browser-tab-bar {
+    background: #c0c0c0 !important;
+    padding-top: 6px 4px 0 4px !important;
+    border-bottom: 1px solid #fff !important; 
+}
+
+.theme-retro .browser-toolbar {
+    background: #c0c0c0 !important;
+    border-bottom: 1px solid #808080 !important;
+    padding: 6px !important;
+    gap: 4px !important;
+}
+
+.theme-retro .browser-bookmarks-bar {
+    background-color: #c0c0c0 !important;
+    border-top: 1px solid #fff !important;
+    border-bottom: 2px solid #808080 !important;
+    padding: 4px 6px !important;
+}
+
+.theme-retro .browser-tab {
+    background: #c0c0c0 !important; 
+    color: #000 !important;
+    border-top: 2px solid #fff !important; 
+    border-left: 2px solid #fff !important;
+    border-right: 2px solid #000 !important; 
+    border-radius: 3px 3px 0 0 !important;
+    box-shadow: inset -1px 0 #808080 !important;
+    margin-right: 2px !important;
+    height: 22px !important;
+    padding: 0 8px !important;
+    font-family: 'MS Sans Serif', Tahoma sans-serif !important;
+    font-size: 11px !important;
+    margin-bottom: 0 !important;
+    z-index: 1 !important; 
+}
+
+.theme-retro .browser-tab.active {
+    height: 26px !important;
+    margin-top: -2px !important;
+    margin-bottom: -1px !important;
+    background: #c0c0c0 !important;
+    border-bottom: 2px solid #c0c0c0 !important;
+    z-index: 3 !important;
+    font-weight: bold !important;
+}
+
+.theme-retro .browser-url-container {
+    background: #fff !important;
+    border-radius: 0 !important;
+    border-top: 2px solid #808080 !important;
+    border-left: 2px solid #808080 !important;
+    border-right: 2px solid #fff !important;
+    border-bottom: 2px solid #fff !important;
+    box-shadow: inset 1px 1px #000 !important;
+    height: 26px !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+}
+
+.theme-retro .browser-url-container input {
+    color: #000 !important;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif !important;
+    font-size: 12px !important;
+}
+
+.theme-retro .browser-btn, .theme-retro .browser-primary-btn{
+    background: #c0c0c0 !important;
+    color: #000 !important;
+    border-radius: 0 !important;
+    border-top: 2px solid #fff !important;
+    border-left: 2px solid #fff !important;
+    border-right: 2px solid #000 !important;
+    border-bottom: 2px solid #000 !important;
+    box-shadow: inset -1px -1px #808080 !important;
+    border-radius: 0 !important;
+    height: 26px !important;
+    min-width: 26px;
+    padding: 0 10px;
+    margin: 0 !important;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif !important;
+    font-size: 12px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: none !important;
+    transition: none !important; 
+}
+
+.theme-retro .browser-btn:active, .theme-retro .browser-primary-btn:active {
+    border-top: 2px solid #000 !important; 
+    border-left: 2px solid #000 !important;
+    border-right: 2px solid #fff !important; 
+    border-bottom: 2px solid #fff !important;
+    box-shadow: inset 1px 1px #808080 !important;
+    padding: 2px 8px 0 12px !important;
+}
+
+.theme-retro #browser-new-tab-btn {
+    height: 20px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    padding: 0 !important;
+    margin-left: 4px !important;
+    margin-bottom: 2px !important;
+}
+
+.theme-retro #browser-new-tab-btn:active {
+    padding: 2px 0 0 2px !important;
+}
+
+.theme-retro .bookmark-item {
+    color: #000 !important;
+    font-family: 'MS Sans Serif', Tahoma, sans-serif !important;
+    padding: 2px 6px !important;
+}
+
+.theme-retro .bookmark-item:hover {
+    background: #000080 !important;
+    color: #fff !important;
+    outline: 1px dotted #fff !important;
+    border-radius: 0 !important;
+}
+
+.theme-retro .browser-toolbar {
+    padding: 4px !important;
+    gap: 4px !important;
+}
+
+.theme-retro .browser-btn, 
+.theme-retro .browser-primary-btn {
+    height: 24px !important;
+    padding: 0 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+.theme-retro .browser-btn:active, 
+.theme-retro .browser-primary-btn:active {
+    padding: 0 10px !important;
+    border-top: 2px solid #000 !important;
+    border-left: 2px solid #000 !important;
+    border-right: 2px solid #fff !important;
+    border-bottom: 2px solid #fff !important;
+    transform: none !important;
+}
+
+.theme-retro .browser-url-container {
+    height: 24px !important;
+    padding: 0 6px !important;
+    margin: 0 !important;
+}
+
+.theme-retro .browser-url-container input {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif !important;
+}
+
+.theme-retro #browser-new-tab-btn {
+    height: 20px !important;
+    width: 24px !important;
+    padding: 0 !important;
+    margin-left: 4px !important;
+    margin-bottom: 2px !important;
+}
+
+.theme-retro .browser-tab {
+    height: 24px !important;
+    padding: 0 8px !important;
+}
+
+.theme-retro .browser-tab.active {
+    height: 26px !important;
+    margin-bottom: -2px !important;
+}
+

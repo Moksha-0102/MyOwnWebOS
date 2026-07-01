@@ -1,0 +1,263 @@
+/*Boot Sequence and shutdown*/
+
+#boot-screen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #000 !important;
+    z-index: 999999 !important;
+    color: #c0c0c0 !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 16px !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    overflow-y: hidden !important;
+    transition: opacity 0.5s ease !important;
+    cursor: default !important;
+}
+
+#boot-text {
+    margin: 0 !important;
+    white-space: pre-wrap !important;
+    line-height: 1.3 !important;
+    text-shadow: 0 0 5px rgba(200, 200, 200, 0.5) !important;
+}
+
+.boot-cursor {
+    display: inline-block !important;
+    width: 10px !important;
+    height: 16px !important;
+    background-color: #c0c0c0 !important;
+    vertical-align: bottom !important;
+    animation: bootBlink 1s step-start infinite !important;
+    margin-left: 4px !important;
+}
+
+@keyframes bootBlink {
+    50% {opacity: 0}
+}
+
+#btn-shutdown:hover {
+    background: #ff5f56 !important;
+    color: #fff !important;
+}
+
+#shutdown-screen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #000 !important;
+    z-index: 9999999 !important;
+    display: none;
+    flex-direction: column !important;
+    color: #e0e0e0 !important;
+    font-family: 'Segoe UI', sans-serif !important;
+    font-size: 18px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out !important;
+    cursor: wait !important;
+}
+
+#shutdown-spinner {
+    margin-bottom: 20px;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {transform: rotate(360deg);}
+}
+
+/* Welcome Screen*/
+
+.welcome-overlay { 
+    position: absolute !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100% !important; 
+    height: 100vh !important; 
+    background: rgba(0,0,0,0.6) !important; 
+    backdrop-filter: blur(5px) !important; 
+    z-index: 99998 !important; 
+}
+
+.welcome-modal {
+    position: absolute !important; 
+    top: 50% !important; 
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important; 
+    width: 420px !important;
+    background: rgba(15, 10, 13, 0.95) !important; 
+    backdrop-filter: blur(40px) !important; 
+    -webkit-backdrop-filter: blur(40px) !important;
+    border: 1px solid rgba(255, 183, 197, 0.15) !important; 
+    border-radius: 20px !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    z-index: 99999 !important; 
+    padding: 40px !important; 
+    color: #e0e0e0 !important; 
+    text-align: center !important;
+}
+
+.welcome-modal:not([style*="none"]) { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 25px !important; 
+}
+
+#welcome-close-btn { 
+    position: absolute !important; 
+    top: 15px !important; 
+    right: 15px !important; 
+    background: transparent !important; 
+    width: auto !important; 
+    height: auto !important; 
+    border: none !important; 
+    color: #888 !important; 
+    font-size: 16px !important; 
+    cursor: pointer !important; 
+    padding: 5px !important; 
+    border-radius: 0 !important; 
+}
+
+#welcome-close-btn:hover { 
+    color: #fff !important; 
+}
+
+.welcome-hero { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    align-items: center !important; 
+    gap: 10px !important; 
+    margin-top: 10px !important; 
+}
+
+.welcome-hero h2 { 
+    margin: 0 !important; 
+    color: #fff !important; 
+    font-size: 26px !important; 
+    font-weight: 700 !important; 
+    letter-spacing: 0.5px !important; 
+}
+
+.welcome-hero p { 
+    margin: 0 !important; 
+    font-size: 14px !important; 
+    line-height: 1.6 !important; 
+    color: #aaa !important; 
+}
+
+.welcome-actions { 
+    display: flex !important; 
+    flex-direction: column !important; 
+    gap: 20px !important; 
+    align-items: center !important;
+     margin-top: 10px !important; 
+}
+
+.welcome-btn { 
+    background: #ffb7c5 !important; 
+    color: #0A0709 !important; 
+    border: none !important; 
+    border-radius: 10px !important; 
+    padding: 12px 30px !important; 
+    font-size: 15px !important; 
+    font-weight: 700 !important; 
+    cursor: pointer !important; 
+    width: 100% !important; 
+    transition: all 0.2s ease !important; 
+}
+
+.welcome-btn:hover{ 
+    transform: translateY(-2px) !important; 
+    box-shadow: 0 4px 15px rgba(255, 183, 197, 0.2) !important; 
+}
+
+.welcome-btn:active { 
+    transform: translateY(1px) !important; 
+}
+
+
+
+#calc-max-btn {
+    display: none !important;
+}
+
+.window.maximized {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - 70px) !important;
+    border-radius: 0 !important;
+    border: none !important;
+}
+
+/*Welcome screen redesign*/
+
+.welcome-modal:not([style*="none"]) {
+    padding: 0 !important;
+    flex-direction: row !important;
+    gap: 0 !important;
+    width: 550px !important;
+    overflow: hidden !important;
+}
+
+.welcome-sidebar {
+    width: 160px !important;
+    background: linear-gradient(180deg, rgba(255, 183, 197, 0.15) 0%, rgba(200, 150, 255, 0.05) 100%) !important;
+    border-right: 1px solid rgba(255, 183, 197, 0.1) !important;
+    flex-shrink: 0 !important;
+}
+
+.welcome-main {
+    padding: 35px 40px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    position: relative !important;
+    text-align: left !important;
+}
+
+.welcome-hero {
+    align-items: flex-start !important;
+}
+
+.welcome-hero p {
+    text-align: left !important;
+    margin-top: 10px !important;
+}
+
+.welcome-actions {
+    align-items: flex-start !important;
+    margin-top: 35px !important;
+}
+
+.welcome-sidebar {
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    padding: 20px 15px !important;
+}
+
+.sidebar-title {
+    writing-mode: vertical-rl !important;
+    transform: rotate(180deg) !important;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    color: rgba(255, 183, 197, 0.4) !important;
+    letter-spacing: 2px !important;
+    margin: 0 !important;
+}
+
+

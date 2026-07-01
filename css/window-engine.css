@@ -1,0 +1,149 @@
+/*Window manager*/
+.window {
+    position: absolute;
+    background: rgba(15, 10, 13, 0.65) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border: 1px solid rgba(255, 183, 197, 0.15) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    resize: both; overflow: hidden;
+    min-width: 300px !important; min-height: 250px !important;
+    transition: top 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                opacity 0.2s ease !important;
+    transform-origin: center bottom !important; 
+}
+
+.window:not([style*="display: none"]) {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.window.minimized {
+    opacity: 0 !important;
+    transform: scale(0.7) translateY(50px) !important;
+    pointer-events: none !important;
+}
+
+.window.maximized {
+    top: 0 !important; left: 0 !important;
+    width: 100% !important; height: calc(100vh - 70px) !important;
+    border-radius: 0 !important; border: none !important;
+}
+
+/*Title Bar*/
+.title-bar {
+    background: transparent !important; border-bottom: 1px solid rgba(255, 183, 197, 0.1) !important;
+    padding: 12px 16px !important; display: flex !important; justify-content: space-between !important;
+    align-items: center !important; cursor: grab; flex-shrink: 0 !important;
+}
+.title-bar:active { 
+    cursor: grabbing !important; 
+}
+.window-title { 
+    font-weight: 600 !important; 
+    font-size: 13px !important; 
+    color: #ffb7c5 !important; 
+    letter-spacing: 0.5px !important; 
+    pointer-events: none !important; 
+}
+
+.window-controls { 
+    display: flex !important; 
+    gap: 8px !important; 
+}
+
+.window-controls button {
+    width: 12px !important; 
+    height: 12px !important; 
+    border-radius: 50% !important; 
+    border: none !important; 
+    cursor: pointer !important; 
+    color: transparent !important; 
+    padding: 0 !important;
+}
+
+.window-controls [id$="-close-btn"] { background: #ff5f56 !important; }
+.window-controls [id$="-max-btn"] { background: #27c93f !important; }
+.window-controls [id$="-min-btn"] { background: #ffbd2e !important; }
+
+.window-content {
+    display: flex !important; 
+    flex-direction: column !important; 
+    flex: 1 1 0px !important; 
+    height: auto !important; 
+    min-height: 0 !important; 
+    background: transparent !important; 
+    padding: 15px !important; 
+    overflow-y: auto !important;
+}
+
+
+/*Menus*/
+
+.start-menu, .context-menu {
+    position: absolute !important; 
+    background: rgba(15, 10, 13, 0.85) !important; 
+    backdrop-filter: blur(20px) !important; 
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 183, 197, 0.15) !important; 
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; 
+    z-index: 10000 !important; 
+    padding: 8px !important; 
+    color: #e0e0e0 !important;
+    width: 200px !important; 
+    height: auto !important; 
+    min-height: 50px !important;
+}
+
+#start-menu { 
+    bottom: 75px !important; 
+    left: 50% !important; 
+    top: auto !important; 
+    right: auto !important; 
+    transform: translateX(-50%) !important; 
+}
+
+.context-item, .start-menu-item { 
+    padding: 8px 12px !important; 
+    cursor: pointer !important; 
+    font-size: 13px !important; 
+    border-radius: 6px !important; 
+    display: block; 
+    text-align: left !important; 
+    color: #e0e0e0 !important; 
+}
+
+.context-item:hover, .start-menu-item:hover { 
+    background: rgba(255, 183, 197, 0.2) !important; 
+    color: #ffb7c5 !important; 
+}
+
+.context-divider, .start-menu-divider { 
+    height: 1px !important; 
+    background: rgba(255, 183, 197, 0.1) !important; 
+    margin: 4px 0 !important; 
+}
+
+
+@media (max-width: 900px) {
+    .window {
+        width: calc(100vw - 20px) !important;
+        min-width: 280px !important;
+        left: 10px !important;
+    }
+    #terminal-window {
+        width: calc(100vw - 20px) !important;
+        height: 400px !important;
+    }
+    .clock {
+        font-size: 11px !important;
+        padding-right: 2px !important;
+    }
+}
+
