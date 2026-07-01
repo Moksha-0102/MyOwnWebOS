@@ -31,6 +31,10 @@
                 <div class="icon-emoji">⌨️</div>
                 <div class="icon-label">Terminal</div>
             </div>
+            <div class="desktop-icon" id="desktop-browser" style="top: 520px; left: 20px;" draggable="false">
+                <div class="icon-emoji">🌐</div>
+                <div class="icon-label">Browser</div>
+            </div>
         </div>
 
         <div class="context-menu" id="desktop-context-menu" style="display: none;">
@@ -57,7 +61,8 @@
             <div class="start-menu-item" id="menu-notepad">Notepad</div>
             <div class="start-menu-item" id="menu-calculator">Calculator</div>
             <div class="start-menu-item" id="menu-explorer">File Manager</div>
-            <div class="start-menu-item" id="menu-explorer">Terminal</div>
+            <div class="start-menu-item" id="menu-browser">Web Browser</div>
+            <div class="start-menu-item" id="menu-terminal">Terminal</div>
             <div class="start-menu-divider"></div>
             <div class="start-menu-item" id="menu-settings">Settings</div>
         </div>
@@ -83,9 +88,6 @@
                 <textarea class="notepad-text" id="notepad-textarea"></textarea>
             </div>
         </div>
-
-
-
 
         <div class="window" id="explorer-window" style="display: none; top: 120px; left: 100px; width: 800px; height: 500px;">
             <div class="title-bar">
@@ -127,8 +129,49 @@
             </div>
         </div>
 
+        <div class="window" id="browser-window" style="display: none; top: 80px; left: 120px; width: 850px; height: 600px;">
+            <div class="title-bar">
+                <div class="window-title">Web Browser</div>
+                <div class="window-controls">
+                    <button id="browser-min-btn">_</button>
+                    <button id="browser-max-btn">☐</button>
+                    <button id="browser-close-btn">X</button>
+                </div>
+            </div>
+
+            <div class="browser-tab-bar" id="browser-tabs-container">
+                <button id="browser-new-tab-btn" class="browser-btn">+</button>
+            </div>
 
 
+            <div class="browser-toolbar">
+                <div style="display: flex; gap: 4px;">
+                    <button id="browser-back-btn" class="browser-btn">◀</button>
+                    <button id="browser-forward-btn" class="browser-btn">▶</button>
+                    <button id="browser-refresh-btn" class="browser-btn">↻</button>
+                    <button id="browser-home-btn" class="browser-btn">🏠</button>
+                </div>
+                
+                <div class="browser-url-container">
+                    <span id="browser-padlock">🔒</span>
+                    <input type="text" id="browser-url" class="modern-input" placeholder="Search or enter URL...">
+                    <div id="browser-loader" class="browser-spinner" style="display: none;"></div>
+                </div>
+                
+                <div style="display: flex; gap: 4px;">
+                    <button id="browser-bookmark-btn" class="browser-btn">⭐</button>
+                    <button id="browser-go-btn" class="browser-primary-btn">Go</button>
+                </div>
+            </div>
+
+            <div class="browser-bookmarks-bar" id="browser-bookmarks-container">
+
+            </div>
+
+            <div class="window-content" id="browser-iframe-container" style="padding: 0; flex-grow: 1; background: #fff; position: relative;">
+
+            </div>
+        </div>
 
         <div class="window" id="calculator-window" style="display: none; top: 150px; left: 200px; width: 250px; height: 350px;">
             <div class="title-bar">
@@ -262,14 +305,13 @@
                     </div>
                     
                     <div class="settings-row" style="margin-top: 10px; border-bottom: none;">
-                        <button id="btn-shutdown" style="flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #ff5f56; border: 1px solid #ff5f56; background: rgba(255, 95, 86, 0.1); border-radius: 6px; transition: 0.2s;">Shutdown System</button>
-                        <button id="btn-restart" style="flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #3b82f6; border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.1); border-radius: 6px; transition: 0.2s;">Restart System</button>
-                    </div>
+                        <button id="btn-shutdown" style="flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: #ff5f56; border: 1px solid #ff5f56; background: rgba(255, 95, 86, 0.1); border-radius: 6px; transition: 0.2s; margin-right: 5px;">Shutdown System</button>
+                        <button id="btn-restart" style="flex: 1; padding: 10px; cursor: pointer; font-weight: 600; color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.05); border-radius: 6px; transition: all 0.2s ease; margin-left: 5px;">Restart System</button>                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="window" id="identity-window" style="display: none; top: 120px; left: 350px; width: 340px; min-height: 350px; z-index: 10000;">
+        <div class="window" id="identity-window" style="display: none; top: 120px; left: 350px; width: 340px; height: 350px; z-index: 10000;">
             <div class="title-bar">
                 <div class="window-title">Manage Identity</div>
                 <div class="window-controls">
@@ -292,13 +334,12 @@
                         <input type="checkbox" id="id-show-password"> Show Password
                     </label>
                 </div>
-                <button id="btn-save-new-identity" style="margin-top: auto; background: #3b82f6; color: white; border: none; cursor: pointer; padding: 10px; border-radius: 6px;">Save & Reboot</button>
-            </div>
+                <button id="btn-save-new-identity" style="margin-top: auto; background: rgba(255, 183, 197, 0.15); color: #ffb7c5; border: 1px solid rgba(255, 183, 197, 0.3); cursor: pointer; padding: 10px; border-radius: 6px; font-weight: 600; font-family: inherit; transition: all 0.2s ease;">Save & Reboot</button>            </div>
         </div>
 
         <div class="window" id="terminal-window" style="display: none; top: 120px; left: 150px; width: 650px; height: 450px; background-color: #1e1e1e !important;">
             <div class="title-bar">
-                <div class="window-title">stardance@webos: ~</div>
+                <div class="window-title">Terminal</div>
                 <div class="window-controls">
                     <button id="term-min-btn">_</button>
                     <button id="term-max-btn">☐</button>
@@ -308,7 +349,7 @@
             <div class="window-content terminal-content" id="term-content" style="padding: 10px; background: #000 !important; overflow-y: auto; flex-grow: 1;">
                 <div id="term-output"></div>
                 <div class="term-input-line">
-                    <span id="term-prompt" class="term-prompt">stardancer@webos:~/Root$</span>
+                    <span id="term-prompt" class="term-prompt">stardancer@epochbos:~/Root$</span>
                     <input type="text" id="term-input" autocomplete="off" spellcheck="false" autofocus>
                 </div>
 
@@ -321,6 +362,7 @@
                 <div class="start-button">Menu</div>
                 <div class="taskbar-app" id="taskbar-notepad" style="display:none;">Notepad</div>
                 <div class="taskbar-app" id="taskbar-calculator" style="display: none;">Calculator</div>
+                <div class="taskbar-app" id="taskbar-browser" style="display: none;">Browser</div>
                 <div class="taskbar-app" id="taskbar-explorer" style="display: none;">File Manager</div> 
                 <div class="taskbar-app" id="taskbar-terminal" style="display: none;">Terminal</div>
                 <div class="taskbar-app" id="taskbar-settings" style="display: none;">Settings</div>
@@ -333,13 +375,13 @@
         
         <div class="welcome-modal" id="welcome-window" style="display: none;">
             <div class="welcome-sidebar">
-                <div class="sidebar-title">WebOS 2.0</div>
+                <div class="sidebar-title">EpochOS 2.0</div>
             </div>
             
             <div class="welcome-main">
                 <button id="welcome-close-btn" class="welcome-close-btn">x</button>
                 <div class="welcome-hero">
-                    <h2>Welcome to WebOS</h2>
+                    <h2>Welcome to EpochOS</h2>
                     <p>Your premium workspace is ready. Drag icons, organize your files, and personalize your environment.</p>
                 </div>
 
@@ -387,8 +429,7 @@
                     <input type="text" id="os-dialog-input" class="modern-input" style="display:none; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,183,197,0.2); padding: 10px; border-radius: 6px; color: #fff; outline: none;">
                     <div style="display: flex; justify-content: flex-end; gap: 10px;">
                         <button id="os-dialog-btn-cancel" style="display: none; padding: 6px 16px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; background: transparent; color: #e0e0e0; font-size: 13px; font-family: inherit;">Cancel</button>
-                        <button id="os-dialog-btn-ok" style="padding: 6px 16px; cursor: pointer; border: none; border-radius: 6px; background: #3b82f6; color: white; font-weight: bold; font-size: 13px; font-family: inherit; box-shadow: 0 2px 5px rgba(59, 130, 246, 0.4);">OK</button>
-                    </div>
+                        <button id="os-dialog-btn-ok" style="padding: 6px 16px; cursor: pointer; border: 1px solid rgba(255, 183, 197, 0.3); border-radius: 6px; background: rgba(255, 183, 197, 0.15); color: #ffb7c5; font-weight: bold; font-size: 13px; font-family: inherit; transition: all 0.2s ease;">OK</button>                    </div>
                 </div>
             </div>
         </div>
